@@ -1,0 +1,141 @@
+---
+title: "Model"
+author: "Azeez"
+date: "24/12/2021"
+output: word_document
+---
+## This workbook is to practice Machine Learning Algorithm using caret package.
+The initial step is to call the library caret
+```{r setup, include=FALSE}
+library(caret)
+```
+## Dataset
+Next is to load the data. The data to be used is iris dataset. Reason being that
+the data has both numerical and categorical data to compute the supervised machine learning. 
+
+```{r}
+head(iris)
+```
+## Understanding the structure of the data
+As data analyst, we need to check the structure of the data.
+```{r, echo=FALSE}
+str(iris)
+class(iris)
+```
+## Data Exploration
+This is done to get the trend and information to explore from the data. We do this 
+through visualization,
+```{r}
+featurePlot(x=iris[,1:4],y=iris$Species, plot = "pairs")
+```
+Let use Box plot to show the distributions of the numerical data for the species.
+```{r}
+featurePlot(x=iris[,1:4], y=iris$Species, plot = "boxplot", auto.key = list(columns = 3), scale=list(y=list(relation="free")), labels=c('Species', 'length in cm'))
+```
+##Interpretation of the Visualisation
+The result shows the distributions of the flower parts in all the three flowers.
+It was observed that in petal.length, setosa flower has the low mean value while
+virginica flower has high value of petal.length with high mean value. setosa and
+versicolor have outliers.
+
+## Scatter plot
+Let check the relationship between the numerical data. To do this we use scatterplot.
+```{r}
+featurePlot(x=iris[,2:4],y=iris$Sepal.Length, plot = "scatter", labels=c("Other parts", "Sepal.Length"),scale=list(x=list(relation="free")))
+```
+## Observation
+It was observed from the visualization that there is a relationship between the
+all the flower parts. Sepal.length and petal.length shows promiscuous relationship.
+To further shows this relationship we conduct correlation to determine the correlation
+coefficient.
+
+##Correlation
+```{r}
+cor_iris = cor(x=iris[,1:4], use = "everything", method = c("pearson"))
+cor_iris
+```
+For proper understanding of the correlation result, we visualize it
+## Correlation visualization
+```{r}
+#corrplot(cor_iris, method = "ellipse", type =c("full"))
+```
+We may like to check the summary of our flower parts.
+```{r}
+summary(iris[1:4])
+summary(iris)
+```
+
+From the exploration of the data we see a trend and we can go ahead with our model.
+
+##Algorithm
+For our model, we will use trainControl with boot as the algorithm
+```{r}
+trc = trainControl(method = "boot", number = 25)
+```
+
+## Linear Regression model
+```{r}
+model_ft = train(Sepal.Length~.,iris, method="lm", trControl = trc)
+model_ft
+summary(model_ft)
+```
+```{r}
+plot(model_ft$finalModel)
+```
+## Test model by predicting the train data from the model
+```{r}
+obs =predict(model_ft, iris)
+#head(obs)
+#head(iris)
+plot(iris$Sepal.Length, obs)
+abline(0,1)
+plot(1:nrow(iris), iris$Sepal.Length)
+points(1:nrow(iris),obs, col="red")
+```
+
+## Test model by predicting from new data 
+We want to know the Sepal.Length with new value of other parts of the flower.
+To do this, we new to create new dataset 
+```{r}
+new_data <- data.frame(Sepal.Width=c(1.7, 3.9, 4.0),
+                       Petal.Length =c(1.0, 2.8, 7.1),
+                       Petal.Width = c(0.4, 2.7, 3.2),
+                       Species =c("setosa", "versicolor", "virginica"))
+new_data
+```
+
+Now, we have the new data set, let predict the Sepal.Length from them
+```{r}
+obs = data.frame(Predicted_Sepal.Length=c(predict(model_ft, new_data)))
+obs
+```
+## To model the flower from the flower part.
+We are to perform classification, since our outcome is categorical
+To do this we change our linear regression model to random forest.
+```{r}
+model_rf = train(Species~.,iris, method="rf", trControl = trc)
+model_rf
+```
+##To predict the type of flower from the model
+
+```{r}
+flower_typ = predict(model_rf, iris)
+confusionMatrix(iris$Species, flower_typ)
+```
+##To predict flower type from new data
+```{r}
+new_data <- data.frame(Sepal.Width=c(1.7, 3.9, 4.0),
+                       Sepal.Length = c(5.0, 6.7, 9.0),
+                       Petal.Length =c(1.0, 2.8, 7.1),
+                       Petal.Width = c(0.4, 2.7, 3.2),
+                       Species = c("setosa", "virginica", "virginica"))
+obs <- data.frame(new_flower=c(predict(model_rf, new_data)))
+obs
+confusionMatrix(model_rf, new_data$species)
+```
+
+
+
+
+
+

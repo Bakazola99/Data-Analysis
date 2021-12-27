@@ -1,0 +1,123 @@
+---
+title: "Health Disease Prediction"
+author: "Azeez O. Baki"
+date: "25/12/2021"
+output: word_document
+---
+## Setting Working Directory, Importing tidyverse library and Loading Data
+```{r setup, include=FALSE}
+getwd()
+setwd("~/R")
+library(tidyverse)
+data <- read.csv("heart.csv")
+head(data)
+```
+
+## Exploring the Data
+```{r}
+glimpse(data)
+str(data)
+```
+
+## Checking for Missing values
+```{r}
+sum(is.na(data))
+sum(is.null(data))
+```
+## Number of Rows and columns
+```{r}
+nrow(data)
+ncol(data)
+colnames(data)
+```
+## Summary of the Data
+```{r}
+summary(data)
+```
+
+## Data Transformation
+This is done for easy visualization of the data when needed. Although, it is not necessary to do.
+```{r}
+data2 <- data %>% 
+  mutate(sex = if_else(sex==1, "male", "female"),
+         fbs = if_else(fbs==1, ">120", "<=120"),
+         exang = if_else(exang==1,"yes", "no"),
+         cp = if_else(cp==1,"Atypical Angina",
+                      if_else(cp==2,"Non-Anginal pain", "Asymptomatic")),
+         restecg = if_else(restecg==0,"Normal",
+                           if_else(restecg==1, "Abnormality", "Probable or Definite")),
+         slope = as.factor(slope),
+         ca = as.factor(ca),
+         thal =as.factor(thal),
+         target = if_else(target== 1, "Yes", "No")
+  ) %>% 
+  mutate_if(is.character,as.factor) %>% 
+  dplyr::select(target, sex, fbs, exang, cp, restecg, slope, ca, thal, everything())
+```
+
+## Data Visualization
+To check what is going on with the data. we will be using ggplot to plot bar chart
+```{r}
+ggplot(data2, aes(x=target, fill=target))+
+  geom_bar()+
+  xlab("Heart Disease")+
+  ylab("count")+
+  ggtitle("Presence and Absence of Heart Disease")+
+  scale_fill_discrete(name = "Heart Disease", labels = c("Absence", "Presence"))
+
+```
+ 
+ Since the plot above shows high number of people with heart disease, we can check the proportions.
+```{r}
+prop.table(table(data2$target))
+```
+ 
+## Comparing blood pressure across the chest pain
+```{r}
+data2 %>% 
+  ggplot(aes(x=sex, y=trestbps))+
+  geom_boxplot(fill = "purple")+
+  xlab("sex")+
+  ylab("BP")+
+  facet_grid(~cp)
+```
+```{r}
+data2 %>% 
+  ggplot(aes(x=sex, y=chol))+
+  geom_boxplot(fill = "yellow")+
+  xlab("sex")+
+  ylab("Chol")+
+  facet_grid(~cp)
+```
+
+## Correlation
+```{r}
+library(corrplot)
+cor_heart = cor(data2[, 10:14], method = "pearson")
+cor_heart
+corrplot(cor_heart, method= "ellipse", type = "full")
+```
+## Building Model
+
+```{r}
+library(caret)
+heart_tr = trainControl(method = "repeatedcv", number = 10, repeats = 5)
+model_rf = train(target~.,data2, method="rf", trControl = heart_tr)
+model_rf
+```
+
+## To Predict the heart disease from the model using the data
+```{r}
+h_disease= predict(model_rf, data2) 
+confusionMatrix(data2$target, h_disease)
+```
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,104 @@
+---
+title: "Real Data Work"
+author: "Azeez"
+date: "09/12/2021"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+Exercise using real data
+  Topic: Nigerian Migration Survey
+
+Research Questions
+  #1 Do transnational migrants households earn higher income?
+  #2 Are migrants more educated than non-migrants?
+  #3 What is the effect of household religion on income?
+  
+Steps
+  #1 checking working directory
+  #2 upload the file
+
+```{r, include=TRUE}
+getwd()
+
+library(haven)
+consolidated <- read_dta("consolidated.dta")
+
+library(haven)
+individuals_5 <- read_dta("individuals 5.dta")
+
+library(haven)
+migrants_2 <- read_dta("migrants 2.dta")
+
+library(haven)
+non_hh_member_migrants_2 <- read_dta("non hh member migrants 2.dta")
+
+```
+
+## Checking variables names
+
+```{r }
+names(consolidated)
+names(individuals_5)
+names(migrants_2)
+names(non_hh_member_migrants_2)
+```
+
+## Getting new file by combining the consolidated and individuals
+
+```{r, echo=TRUE}
+library(dplyr)
+
+newdata <- left_join(consolidated, individuals_5, by = "record")
+newdata
+
+```
+## Selection of only needed variables
+```{r}
+newdata1 <- newdata %>% select('record', 'ur',"religion", "maritalstatus", "age", "highestschooling", "food.x", "cookigfuel", 'clothigfootwear')
+newdata1
+```
+## Calculating of mean
+```{r}
+newdata1$food.x <- as.numeric(as.double(newdata1$food.x))
+
+mean(newdata1$food.x, na.rm=TRUE)
+```
+## Joining newdata1 with migrant
+```{r}
+newdata2 <- left_join(newdata1, migrants_2, by = "record")
+newdata2
+```
+## adding new column in the data
+
+  #note: In dplyr: select is used to extract variables
+                  filter is used to extract rows
+                  mutate is used to create new column/variable
+```{r}
+newdata3 <- newdata2 <- left_join(newdata1, migrants_2, by = "record") %>% 
+  filter(ur==2) %>% 
+  mutate(expendit = food.x + cookigfuel + clothigfootwear)
+```
+## Regression Analysis
+    Note: when computing effect with two level (yes,no) use binomial i.e gm
+          otherwise use lm (linear regression)
+```{r}
+regression1 <- lm(expendit ~ factor(religion)+ factor(maritalstatus), data=newdata3)
+summary(regression1)
+```
+## Interpretation of the Regression result
+    y=a+bx+c
+The result make reference to one of the religion 1(Islam). Showing that religion2 is earning 1896 + 19782, religion3 earned 16863 more of religion1.
+
+Conclusion Religion 3 and 4 are statistically significant from the other religions i.e they spent more.
+
+
+
+
+
+
+
+
+
+

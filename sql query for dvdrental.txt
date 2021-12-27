@@ -1,0 +1,59 @@
+	/*query 1 – Used for Question 1 Visualization*/
+SELECT f.title AS film_title, c.name AS category_name, COUNT (r.rental_id) AS No_rented_out
+FROM 	film_category AS fc
+JOIN	category AS c
+ON	fc.category_id = c.category_id
+JOIN	film AS f
+ON	fc.film_id = f.film_id
+JOIN	inventory AS i
+ON	f.film_id = i.film_id
+JOIN 	rental AS r
+ON	i.inventory_id = r.inventory_id
+WHERE name = 'Animation' OR name='Children' OR name = 'Classics' OR name= 'Comedy' OR name='Family' OR name ='Music'
+GROUP BY film_title, category_name
+ORDER BY category_name, film_title;
+		
+	/*query 2 – Used for Question 2 Visualization*/
+SELECT category_name, standard_quartile, COUNT(standard_quartile)
+FROM
+(SELECT	f.title AS film_title, c.name AS category_name, f.rental_duration AS rental_duration, 
+	 NTILE(4) OVER (ORDER BY rental_duration) AS standard_quartile
+FROM film_category AS fc
+JOIN category AS c
+ON fc.category_id = c.category_id
+JOIN film AS f
+ON    fc.film_id = f.film_id
+WHERE name = 'Animation' OR name='Children' OR name = 'Classics' OR name= 'Comedy' OR name='Family' OR name ='Music')q1
+GROUP BY category_name, standard_quartile
+ORDER BY category_name, standard_quartile;
+
+	/*query 3 – Used for Question 3 Visualization*/
+SELECT DATE_TRUNC('month', p.payment_date) pay_month, CONCAT(c.first_name, ' ', c.last_name) AS fullname, 
+		COUNT(p.amount) AS pay_countpermon, SUM(p.amount) AS pay_amount
+FROM customer AS c
+JOIN payment AS p
+ON p.customer_id = c.customer_id
+WHERE CONCAT (c.first_name, ' ', c.last_name) IN
+(SELECT t1.fullname
+FROM
+(SELECT CONCAT (c.first_name,  ' ', c.last_name) AS fullname, SUM(p.amount) as amount_total
+FROM customer AS c
+JOIN payment AS p
+ON p.customer_id = c.customer_id
+GROUP BY fullname	
+ORDER BY amount_total DESC
+LIMIT 10) t1) AND (p.payment_date BETWEEN '2007-01-01' AND '2008-01-01')
+GROUP BY fullname, pay_month
+ORDER BY fullname, pay_month, pay_countpermon;
+
+	/*query 4 – Used for Question 4 Visualization*/
+SELECT DATE_PART('Month', rental_date) AS months, DATE_PART('year', rental_date) AS years,
+		s.store_id AS store_id, COUNT(rental_id) AS counts
+FROM rental AS r
+JOIN staff AS sf
+ON r.staff_id = sf.staff_id
+JOIN store AS s
+ON sf.store_id = s.store_id
+GROUP BY months,years,s.store_id
+ORDER BY counts DESC;
+
