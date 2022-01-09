@@ -1,0 +1,183 @@
+---
+title: "Logistic Regression"
+author: "Azeez Olalekan, Baki"
+date: "08/01/2022"
+output:
+  word_document: default
+  pdf_document: default
+---
+# Regression Analysis
+## What is regression?
+Regression is a model or statistical analysis conducted to determine the effect of a variable(s)(predictor/independent)on another variable(s)(dependent/outcome).
+
+Mathematically, y = ax+bx+c.
+
+#Example of Regression
+
+In this analysis, we are going to be performing both linear regression and logistic regression on a dataset and use the result to predict a new set of
+input data. So let get started!
+
+# The Data: Binary data
+
+Let get familiar with the data. The data name is Binary data with 4 variables (admit,gre,gpa,rank)and 400 observations.
+Admit: whether the student was admitted or rejected. 1:admitted, 0:rejected.
+gre: test scores
+gpa: grade
+rank: the rank of the school the student graduated from. 1:highest ranked school, 2:high ranked, 3: moderate ranked, 4:low ranked.
+
+# Loading Data
+Let start by importing the data.
+```{r setup, include=FALSE}
+data <- read.csv("binary.csv")
+```
+
+Next, let check the structure of the data.
+
+```{r}
+str(data)
+```
+
+## Exploratory Analysis
+Before we delve into regression, let get familiar with the data using charts and graphs.
+
+#Summary of the data
+
+```{r}
+summary(data)
+```
+# Inteepretation
+From summary statistics, the minimum score in the gre was 220 while the maximum was 800, with mean of 587.7. The highest gpa was 4.00 and lowest was 2.26, mean= 3.34.
+
+# Boxplot for GRE
+```{r}
+library(ggplot2)
+ggplot(data=data, aes(gre))+
+  geom_boxplot(colour="blue")+
+  ggtitle("Distribution of GRE Scores", 'Source: Dr.Rai')
+```
+#Histogram for GPA
+```{r}
+ggplot(data=data, aes(gpa))+
+  geom_histogram(colour="blue")+
+  ggtitle("Distribution of GPA Scores", 'Source: Dr.Rai')
+
+```
+
+##Barchart for Rank
+```{r}
+ggplot(data=data, aes(x= factor(rank), y = admit))+
+  geom_col()+
+  ggtitle("Accepted school", "Source: Dr Rai")
+
+```
+From the barchart, we noticed that most of the students admitted were from highest, high and moderate ranked schools.
+
+Lastly, let check if there is any correlation among the variables.
+
+#Correlation
+```{r}
+cor <- cor(data[,2:3], method = c('pearson'))
+cor
+#corrplot(cor, method = c("ellipse"), type = "upper")
+```
+The correlation plot shows that there is a correlation among the variables. Moderately positive correlation was observed between gpa and gre, i.e the higher one of the variables the higher the second one. But gpa and gre have weak negative correlation with school rank.
+
+## Linear Regression
+
+Let partition the data into 80% train data and 20% validate data.
+
+```{r}
+partition <- sample(2,nrow(data), replace = TRUE, prob = c(0.8, 0.2))
+
+train <- data[partition==1,]
+validate <- data[partition==2,]
+```
+
+Now, we have two new data of train containing 324 observation and 4 variables and validate data to check our model, it contains 76 obs and 4 variables.
+Let perform linear regression on the train dataset.
+
+```{r}
+linear_model <- lm(admit~.,data = train)
+summary(linear_model)
+plot(linear_model)
+```
+# Interpretation
+The result of the linear regression on the train data shows gpa and rank have significant impact on the admission of a student. GRE has no impact of coefficient of 0.0003. School rank is negative i.e the lower the school rank (high number) the less the student being admitted.
+Also, the Adjusted R-squared:   0.08258, shows the model is only capturing 8% of the variance in data.
+
+# Prediction on train data
+```{r}
+pred_train <- predict(linear_model, train)
+head(pred_train)
+head(train)
+```
+
+Let test the model on the validate data
+```{r}
+pred_test <- predict(linear_model, validate)
+head(pred_test)
+head(validate)
+```
+# Interpretation
+The model predict that the first candidate from the validate data should be rejected which was actually rejected from the test data.
+
+# Accuracy of the model/Confusion Matrix
+
+```{r}
+pred_train_1 = ifelse(pred_train>0.5,1,0)
+accuracy <- table(prediction=pred_train_1, actual=train$admit)
+accuracy
+```
+From the result, it shows that 207 students were not admitted and they are predicted not admitted. 15 students were not admitted but the model predicted them to be admitted. Also. 89 students were admitted, while the model predicted not admitted. 20 were admitted and the model predicted to be admitted.
+
+# NOTE: Please note that linear regression is not suitable for this type of dataset. Linear regression can be used if the predicted variable is not categorical. Logistic regression is best used as the result is on classification.
+
+# Logistic Regression
+Note: admit and rank are not numerical variables, they are factors but because linear regression predict numerical variable we did not convert them. But we can convert them for logistic regression to actually get the full insight.
+
+# Converting "admit" and "rank" to factor varibales
+```{r}
+str(data)
+data$admit <- as.factor(data$admit)
+data$rank <- as.factor(data$rank)
+```
+```{r}
+partition <- sample(2,nrow(data), replace = TRUE, prob = c(0.8, 0.2))
+
+train1 <- data[partition==1,]
+validate1 <- data[partition==2,]
+```
+
+```{r}
+lgr <- glm(admit~.,data = train1, family = "binomial")
+summary(lgr)
+plot(lgr)
+```
+## Interpretation
+The result shows that gre has a significant effect at 98% confident interval on the admission of the students. GPA also has strong effect which is significant at 94%. Also, students from school ranked lowest are likely not being accepted as the coefficient shows negative values.
+Therefore, we can say that the higher the gpa from best school the higher the probability of being accepted.
+
+#Prediction of the model with train data
+```{r}
+prediction <- predict(lgr, train1, type = "response")
+head(prediction)
+head(train1)
+```
+The prediction of the train data from the model shows that student 1 should not be admitted and he/she was not admitted. student 2 was also predicted to be not admitted but was actually admitted.
+
+#Prediction on the Test data
+```{r}
+prediction1 <- predict(lgr, validate1, type = "response")
+head(prediction1)
+head(validate1)
+```
+## Confusion Matrix
+```{r}
+pre <- ifelse(prediction>0.5, 1, 0)
+cm <- table(prediction= pre, actual= train1$admit)
+cm
+rate <- sum(diag(cm))/sum(cm)
+rate
+```
+
+The confusion matrix shows that 202 students were actually not admitted and the model correctly predict them not admitted. 14 were actually not admitted but the model predict them to be admitted. Also, 77 were actually admitted and were missed predicted while 19 were correctly predicted to be admitted.

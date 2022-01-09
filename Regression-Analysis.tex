@@ -1,0 +1,622 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Logistic Regression},
+  pdfauthor={Azeez Olalekan, Baki},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Logistic Regression}
+\author{Azeez Olalekan, Baki}
+\date{08/01/2022}
+
+\begin{document}
+\maketitle
+
+\hypertarget{regression-analysis}{%
+\subsection{Regression Analysis}\label{regression-analysis}}
+
+\hypertarget{what-is-regression}{%
+\section{What is regression?}\label{what-is-regression}}
+
+Regression is a model or statistical analysis conducted to determine the
+effect of a variable(s)(predictor/independent)on another
+variable(s)(dependent/outcome).
+
+Mathematically, y = ax+bx+c.
+
+\#Example of Regression
+
+In this analysis, we are going to be performing both linear regression
+and logistic regression on a dataset and use the result to predict a new
+set of input data. So let get started!
+
+\hypertarget{the-data-binary-data}{%
+\section{The Data: Binary data}\label{the-data-binary-data}}
+
+Let get familiar with the data. The data name is Binary data with 4
+variables (admit,gre,gpa,rank)and 400 observations. Admit: whether the
+student was admitted or rejected. 1:admitted, 0:rejected. gre: test
+scores gpa: grade rank: the rank of the school the student graduated
+from. 1:highest ranked school, 2:high ranked, 3: moderate ranked, 4:low
+ranked.
+
+\hypertarget{loading-data}{%
+\section{Loading Data}\label{loading-data}}
+
+Let start by importing the data.
+
+Next, let check the structure of the data.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{str}\NormalTok{(data)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    400 obs. of  4 variables:
+##  $ admit: int  0 1 1 1 0 1 1 0 1 0 ...
+##  $ gre  : int  380 660 800 640 520 760 560 400 540 700 ...
+##  $ gpa  : num  3.61 3.67 4 3.19 2.93 3 2.98 3.08 3.39 3.92 ...
+##  $ rank : int  3 3 1 4 4 2 1 2 3 2 ...
+\end{verbatim}
+
+\hypertarget{exploratory-analysis}{%
+\subsection{Exploratory Analysis}\label{exploratory-analysis}}
+
+Before we delve into regression, let get familiar with the data using
+charts and graphs.
+
+\#Summary of the data
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(data)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      admit             gre             gpa             rank      
+##  Min.   :0.0000   Min.   :220.0   Min.   :2.260   Min.   :1.000  
+##  1st Qu.:0.0000   1st Qu.:520.0   1st Qu.:3.130   1st Qu.:2.000  
+##  Median :0.0000   Median :580.0   Median :3.395   Median :2.000  
+##  Mean   :0.3175   Mean   :587.7   Mean   :3.390   Mean   :2.485  
+##  3rd Qu.:1.0000   3rd Qu.:660.0   3rd Qu.:3.670   3rd Qu.:3.000  
+##  Max.   :1.0000   Max.   :800.0   Max.   :4.000   Max.   :4.000
+\end{verbatim}
+
+\hypertarget{inteepretation}{%
+\section{Inteepretation}\label{inteepretation}}
+
+From summary statistics, the minimum score in the gre was 220 while the
+maximum was 800, with mean of 587.7. The highest gpa was 4.00 and lowest
+was 2.26, mean= 3.34.
+
+\hypertarget{boxplot-for-gre}{%
+\section{Boxplot for GRE}\label{boxplot-for-gre}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(ggplot2)}
+\FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data=}\NormalTok{data, }\FunctionTok{aes}\NormalTok{(gre))}\SpecialCharTok{+}
+  \FunctionTok{geom\_boxplot}\NormalTok{(}\AttributeTok{colour=}\StringTok{"blue"}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{ggtitle}\NormalTok{(}\StringTok{"Distribution of GRE Scores"}\NormalTok{, }\StringTok{\textquotesingle{}Source: Dr.Rai\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-3-1.pdf}
+\#Histogram for GPA
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data=}\NormalTok{data, }\FunctionTok{aes}\NormalTok{(gpa))}\SpecialCharTok{+}
+  \FunctionTok{geom\_histogram}\NormalTok{(}\AttributeTok{colour=}\StringTok{"blue"}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{ggtitle}\NormalTok{(}\StringTok{"Distribution of GPA Scores"}\NormalTok{, }\StringTok{\textquotesingle{}Source: Dr.Rai\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+\end{verbatim}
+
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\#\#Barchart for Rank
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data=}\NormalTok{data, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=} \FunctionTok{factor}\NormalTok{(rank), }\AttributeTok{y =}\NormalTok{ admit))}\SpecialCharTok{+}
+  \FunctionTok{geom\_col}\NormalTok{()}\SpecialCharTok{+}
+  \FunctionTok{ggtitle}\NormalTok{(}\StringTok{"Accepted school"}\NormalTok{, }\StringTok{"Source: Dr Rai"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-5-1.pdf}
+From the barchart, we noticed that most of the students admitted were
+from highest, high and moderate ranked schools.
+
+Lastly, let check if there is any correlation among the variables.
+
+\#Correlation
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cor }\OtherTok{\textless{}{-}} \FunctionTok{cor}\NormalTok{(data[,}\DecValTok{2}\SpecialCharTok{:}\DecValTok{3}\NormalTok{], }\AttributeTok{method =} \FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}pearson\textquotesingle{}}\NormalTok{))}
+\NormalTok{cor}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           gre       gpa
+## gre 1.0000000 0.3842659
+## gpa 0.3842659 1.0000000
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#corrplot(cor, method = c("ellipse"), type = "upper")}
+\end{Highlighting}
+\end{Shaded}
+
+The correlation plot shows that there is a correlation among the
+variables. Moderately positive correlation was observed between gpa and
+gre, i.e the higher one of the variables the higher the second one. But
+gpa and gre have weak negative correlation with school rank.
+
+\hypertarget{linear-regression}{%
+\subsection{Linear Regression}\label{linear-regression}}
+
+Let partition the data into 80\% train data and 20\% validate data.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{partition }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\DecValTok{2}\NormalTok{,}\FunctionTok{nrow}\NormalTok{(data), }\AttributeTok{replace =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{prob =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.8}\NormalTok{, }\FloatTok{0.2}\NormalTok{))}
+
+\NormalTok{train }\OtherTok{\textless{}{-}}\NormalTok{ data[partition}\SpecialCharTok{==}\DecValTok{1}\NormalTok{,]}
+\NormalTok{validate }\OtherTok{\textless{}{-}}\NormalTok{ data[partition}\SpecialCharTok{==}\DecValTok{2}\NormalTok{,]}
+\end{Highlighting}
+\end{Shaded}
+
+Now, we have two new data of train containing 324 observation and 4
+variables and validate data to check our model, it contains 76 obs and 4
+variables. Let perform linear regression on the train dataset.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{linear\_model }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(admit}\SpecialCharTok{\textasciitilde{}}\NormalTok{.,}\AttributeTok{data =}\NormalTok{ train)}
+\FunctionTok{summary}\NormalTok{(linear\_model)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = admit ~ ., data = train)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -0.6165 -0.3445 -0.2128  0.5340  0.9306 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) -0.0701569  0.2387951  -0.294  0.76910    
+## gre          0.0004801  0.0002346   2.047  0.04151 *  
+## gpa          0.0998076  0.0701838   1.422  0.15597    
+## rank        -0.0937076  0.0268867  -3.485  0.00056 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.4521 on 321 degrees of freedom
+## Multiple R-squared:  0.07221,    Adjusted R-squared:  0.06354 
+## F-statistic: 8.328 on 3 and 321 DF,  p-value: 2.383e-05
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(linear\_model)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-8-1.pdf}
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-8-2.pdf}
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-8-3.pdf}
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-8-4.pdf}
+\# Interpretation The result of the linear regression on the train data
+shows gpa and rank have significant impact on the admission of a
+student. GRE has no impact of coefficient of 0.0003. School rank is
+negative i.e the lower the school rank (high number) the less the
+student being admitted. Also, the Adjusted R-squared: 0.08258, shows the
+model is only capturing 8\% of the variance in data.
+
+\hypertarget{prediction-on-train-data}{%
+\section{Prediction on train data}\label{prediction-on-train-data}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pred\_train }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(linear\_model, train)}
+\FunctionTok{head}\NormalTok{(pred\_train)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##          1          2          4          5          6          7 
+## 0.19146143 0.33187602 0.18065893 0.09709774 0.40672179 0.40241453
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(train)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   admit gre  gpa rank
+## 1     0 380 3.61    3
+## 2     1 660 3.67    3
+## 4     1 640 3.19    4
+## 5     0 520 2.93    4
+## 6     1 760 3.00    2
+## 7     1 560 2.98    1
+\end{verbatim}
+
+Let test the model on the validate data
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pred\_test }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(linear\_model, validate)}
+\FunctionTok{head}\NormalTok{(pred\_test)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         3         9        14        21        22        23 
+## 0.6194407 0.2463187 0.3859008 0.2051573 0.4215913 0.1245264
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(validate)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    admit gre  gpa rank
+## 3      1 800 4.00    1
+## 9      1 540 3.39    3
+## 14     0 700 3.08    2
+## 21     0 500 3.17    3
+## 22     1 660 3.63    2
+## 23     0 600 2.82    4
+\end{verbatim}
+
+\hypertarget{interpretation}{%
+\section{Interpretation}\label{interpretation}}
+
+The model predict that the first candidate from the validate data should
+be rejected which was actually rejected from the test data.
+
+\hypertarget{accuracy-of-the-modelconfusion-matrix}{%
+\section{Accuracy of the model/Confusion
+Matrix}\label{accuracy-of-the-modelconfusion-matrix}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pred\_train\_1 }\OtherTok{=} \FunctionTok{ifelse}\NormalTok{(pred\_train}\SpecialCharTok{\textgreater{}}\FloatTok{0.5}\NormalTok{,}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{)}
+\NormalTok{accuracy }\OtherTok{\textless{}{-}} \FunctionTok{table}\NormalTok{(}\AttributeTok{prediction=}\NormalTok{pred\_train\_1, }\AttributeTok{actual=}\NormalTok{train}\SpecialCharTok{$}\NormalTok{admit)}
+\NormalTok{accuracy}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           actual
+## prediction   0   1
+##          0 210  90
+##          1  11  14
+\end{verbatim}
+
+From the result, it shows that 207 students were not admitted and they
+are predicted not admitted. 15 students were not admitted but the model
+predicted them to be admitted. Also. 89 students were admitted, while
+the model predicted not admitted. 20 were admitted and the model
+predicted to be admitted.
+
+\hypertarget{note-please-note-that-linear-regression-is-not-suitable-for-this-type-of-dataset.-linear-regression-can-be-used-if-the-predicted-variable-is-not-categorical.-logistic-regression-is-best-used-as-the-result-is-on-classification.}{%
+\section{NOTE: Please note that linear regression is not suitable for
+this type of dataset. Linear regression can be used if the predicted
+variable is not categorical. Logistic regression is best used as the
+result is on
+classification.}\label{note-please-note-that-linear-regression-is-not-suitable-for-this-type-of-dataset.-linear-regression-can-be-used-if-the-predicted-variable-is-not-categorical.-logistic-regression-is-best-used-as-the-result-is-on-classification.}}
+
+\hypertarget{logistic-regression}{%
+\subsection{Logistic Regression}\label{logistic-regression}}
+
+Note: admit and rank are not numerical variables, they are factors but
+because linear regression predict numerical variable we did not convert
+them. But we can convert them for logistic regression to actually get
+the full insight.
+
+\hypertarget{converting-admit-and-rank-to-factor-varibales}{%
+\section{Converting ``admit'' and ``rank'' to factor
+varibales}\label{converting-admit-and-rank-to-factor-varibales}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{str}\NormalTok{(data)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    400 obs. of  4 variables:
+##  $ admit: int  0 1 1 1 0 1 1 0 1 0 ...
+##  $ gre  : int  380 660 800 640 520 760 560 400 540 700 ...
+##  $ gpa  : num  3.61 3.67 4 3.19 2.93 3 2.98 3.08 3.39 3.92 ...
+##  $ rank : int  3 3 1 4 4 2 1 2 3 2 ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{admit }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{admit)}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{rank }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{rank)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{partition }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\DecValTok{2}\NormalTok{,}\FunctionTok{nrow}\NormalTok{(data), }\AttributeTok{replace =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{prob =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.8}\NormalTok{, }\FloatTok{0.2}\NormalTok{))}
+
+\NormalTok{train1 }\OtherTok{\textless{}{-}}\NormalTok{ data[partition}\SpecialCharTok{==}\DecValTok{1}\NormalTok{,]}
+\NormalTok{validate1 }\OtherTok{\textless{}{-}}\NormalTok{ data[partition}\SpecialCharTok{==}\DecValTok{2}\NormalTok{,]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lgr }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(admit}\SpecialCharTok{\textasciitilde{}}\NormalTok{.,}\AttributeTok{data =}\NormalTok{ train1, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(lgr)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = admit ~ ., family = "binomial", data = train1)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.6104  -0.8458  -0.6191   1.1054   2.1346  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(>|z|)    
+## (Intercept) -3.797029   1.245900  -3.048 0.002307 ** 
+## gre          0.002251   0.001206   1.867 0.061944 .  
+## gpa          0.748987   0.365963   2.047 0.040696 *  
+## rank2       -0.518854   0.344968  -1.504 0.132565    
+## rank3       -1.618581   0.389219  -4.159  3.2e-05 ***
+## rank4       -1.525873   0.455953  -3.347 0.000818 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 408.24  on 325  degrees of freedom
+## Residual deviance: 368.23  on 320  degrees of freedom
+## AIC: 380.23
+## 
+## Number of Fisher Scoring iterations: 4
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(lgr)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-14-1.pdf}
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-14-2.pdf}
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-14-3.pdf}
+\includegraphics{Regression-Analysis_files/figure-latex/unnamed-chunk-14-4.pdf}
+\#\# Interpretation The result shows that gre has a significant effect
+at 98\% confident interval on the admission of the students. GPA also
+has strong effect which is significant at 94\%. Also, students from
+school ranked lowest are likely not being accepted as the coefficient
+shows negative values. Therefore, we can say that the higher the gpa
+from best school the higher the probability of being accepted.
+
+\#Prediction of the model with train data
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{prediction }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(lgr, train1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\FunctionTok{head}\NormalTok{(prediction)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         1         2         3         4         5         6 
+## 0.1351234 0.2348389 0.7309989 0.1834701 0.1236982 0.4113994
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(train1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   admit gre  gpa rank
+## 1     0 380 3.61    3
+## 2     1 660 3.67    3
+## 3     1 800 4.00    1
+## 4     1 640 3.19    4
+## 5     0 520 2.93    4
+## 6     1 760 3.00    2
+\end{verbatim}
+
+The prediction of the train data from the model shows that student 1
+should not be admitted and he/she was not admitted. student 2 was also
+predicted to be not admitted but was actually admitted.
+
+\#Prediction on the Test data
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{prediction1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(lgr, validate1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\FunctionTok{head}\NormalTok{(prediction1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         9        11        14        18        24        28 
+## 0.1596252 0.3714089 0.3933332 0.0636939 0.1973447 0.2056765
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(validate1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    admit gre  gpa rank
+## 9      1 540 3.39    3
+## 11     0 800 4.00    4
+## 14     0 700 3.08    2
+## 18     0 360 2.56    3
+## 24     0 680 3.19    4
+## 28     1 520 3.74    4
+\end{verbatim}
+
+\hypertarget{confusion-matrix}{%
+\subsection{Confusion Matrix}\label{confusion-matrix}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pre }\OtherTok{\textless{}{-}} \FunctionTok{ifelse}\NormalTok{(prediction}\SpecialCharTok{\textgreater{}}\FloatTok{0.5}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{)}
+\NormalTok{cm }\OtherTok{\textless{}{-}} \FunctionTok{table}\NormalTok{(}\AttributeTok{prediction=}\NormalTok{ pre, }\AttributeTok{actual=}\NormalTok{ train1}\SpecialCharTok{$}\NormalTok{admit)}
+\NormalTok{cm}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           actual
+## prediction   0   1
+##          0 201  73
+##          1  21  31
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rate }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(}\FunctionTok{diag}\NormalTok{(cm))}\SpecialCharTok{/}\FunctionTok{sum}\NormalTok{(cm)}
+\NormalTok{rate}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.7116564
+\end{verbatim}
+
+The confusion matrix shows that 202 students were actually not admitted
+and the model correctly predict them not admitted. 14 were actually not
+admitted but the model predict them to be admitted. Also, 77 were
+actually admitted and were missed predicted while 19 were correctly
+predicted to be admitted.
+
+\end{document}
