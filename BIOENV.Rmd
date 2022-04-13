@@ -1,0 +1,122 @@
+---
+title: "BIOENV ANALYSIS"
+author: "Azeez Olalekan, Baki"
+date: '2022-04-13'
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+# Understanding the Effects of Environmental and Biological Parameters on Bay of Biscay.
+
+An oceanographic campaign was carried out on the continental shelf of the Bay of Biscay. The dataset (BIOENV) is composed of biological and environmental descriptors measured on the seabed at 30 sampling stations. Biological variables consist of abundance data associated with five benthic species (labelled from sp1 to sp5). Environmental variables are water depth (in meters), a pollution index (the higher the index, the higher the level of pollution), temperature (in °C) and the nature of sediment (three categories: C for clay/silt, S for sand and G for gravel/stone). Objectives were (1) to analyze the relationships between environmental and biological variables, and (2) to characterize the relationships between environmental gradients and benthic community distribution.
+
+```{r setup, include=TRUE}
+library(dplyr)
+bioenv <- read.delim("BIOENV.txt", header = T)
+glimpse(bioenv)
+```
+
+## Scatter plot to show relationship between the Quantitative variables.
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+pairs(bioenv[,-c(1,10)])
+```
+
+We observed relationship between some of the biological parameters and environmental variables. E.g sp4 and Depth.
+
+## Boxplot showing the distribution of sediment according to the Depth
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+boxplot <- ggplot(data=bioenv, mapping = aes(x= Sediment, y=Depth, col=Sediment))+
+  geom_boxplot()+
+  ggtitle("Distribution of Sediment")
+boxplot
+```
+
+Obs: It was observed that from a depth of 74-100m, granite is the abundant sediment.
+
+##Summary Statistics
+
+```{r,echo=TRUE}
+summary <- bioenv %>% 
+  group_by(Sediment) %>% 
+  summarise(avg_pollution = mean(Pollution),
+            avg_temp = mean(Temperature),
+            avg_depth = mean(Depth)) %>% 
+  arrange(desc(avg_pollution))
+summary
+```
+
+Obs: As the depth of the Bay increases, the pollution rate is reduced while most of the polluted water is at the surface (avg_pollution = 5.35, mostly dominated by silt).
+
+#Correlation
+
+```{r, echo=FALSE}
+bioenv_cor <- cor(bioenv[,-c(1,10)])
+bioenv_cor
+
+library(corrplot)
+cor_plot <- corrplot(bioenv_cor, type = "lower", method = "ellipse")
+```
+
+# Question 1 (6 points) : Does the nature of the sediment vary with the water depth at the level of significance  = 1%?
+
+```{r}
+bioenv$Sf <- as.factor(bioenv$Sediment)
+head(bioenv)
+```
+
+## One-way Anova
+
+```{r}
+bioenv_aov <- aov(Depth~Sf, data=bioenv)
+anova(bioenv_aov)
+
+#install.packages("gplot")
+library(gplots)
+plotmeans(Depth~Sf, data=bioenv,
+          main = "Variation of Sediment with Depth")
+
+diff <- TukeyHSD(bioenv_aov, conf.level = .99)
+diff
+plot(diff)
+```
+
+Obs: The result of the anova shows that there is significant difference among the means of sediment with the bay depth (p\<0.01). Granites were found to have been found at a depth of 90m which is significant from the clay and silt.
+
+# Question 2 (6 points) : Does the level of pollution impact the total abundance of species at the level of significance  = 1% ?
+
+```{r}
+bioenv <- bioenv %>% 
+  mutate(total_species = (sp1+sp2+sp3+sp4+sp5))
+head(bioenv)
+```
+
+```{r}
+bioenv_reg <- lm(total_species~Pollution,
+                 data= bioenv)
+summary(bioenv_reg)
+```
+
+Obs: The result shows that pollution has significant impact on the total abundant of the species at 0.99 CI (p\<0.05). The adjusted R-squared shows that the pollution predicted 39% of the variation in the abundance of the species.
+
+# Question 3 (8 points) : From a principal component analysis carried out on all the quantitative variables, describe the relationships between the different variables as well as the relationships between environmental gradients and observations / stations.
+
+```{r, echo=FALSE}
+bioenv_pca <- prcomp(bioenv[,-c(1, 10, 11, 12)])
+summary(bioenv_pca)
+screeplot(bioenv_pca, type = "line")
+
+bioenv_pca$rotation
+biplot(bioenv_pca)
+
+```
+
+Obs: The pca results revealed that PC1 and PC2 captured high proportions of the variance, with a cumulative of 76.9%. From the biplot, Depth has high relationship with PC1 and negative relationship with PC2. Also sp1 has high relationship with PC2. sp1, sp2 and Depth has positive relationship in PC1.
+
+#Summary of the Analysis The analysis shows that the depth of the bay contain more of granite with decrease in pollution level. There is also relationship between the environmental and biological variables. In other words, the level of pollution of the bay is low and the bottom might not be productive due to the nature of the sediment.
