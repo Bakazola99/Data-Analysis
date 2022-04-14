@@ -3,9 +3,9 @@ title: "BIOENV ANALYSIS"
 author: "Azeez Olalekan, Baki"
 date: '2022-04-13'
 output:
+  word_document: default
   pdf_document: default
   html_document: default
-  word_document: default
 ---
 
 # Understanding the Effects of Environmental and Biological Parameters on Bay of Biscay.
@@ -25,9 +25,9 @@ knitr::opts_chunk$set(echo = TRUE)
 pairs(bioenv[,-c(1,10)])
 ```
 
-We observed relationship between some of the biological parameters and environmental variables. E.g sp4 and Depth.
+We observed relationship between some of the biological parameters and environmental variables. E.g sp4 and Depth. Also, we see relationship between pollution and depth.
 
-## Boxplot showing the distribution of sediment according to the Depth
+## Box plot showing the distribution of sediment according to the Depth
 
 ```{r}
 knitr::opts_chunk$set(echo = TRUE)
@@ -103,7 +103,7 @@ bioenv_reg <- lm(total_species~Pollution,
 summary(bioenv_reg)
 ```
 
-Obs: The result shows that pollution has significant impact on the total abundant of the species at 0.99 CI (p\<0.05). The adjusted R-squared shows that the pollution predicted 39% of the variation in the abundance of the species.
+Obs: The result shows that pollution has significant impact on the total abundant of the species at 99% CI (p\<0.01). The adjusted R-squared shows that the pollution predicted 39% of the variation in the abundance of the species.
 
 # Question 3 (8 points) : From a principal component analysis carried out on all the quantitative variables, describe the relationships between the different variables as well as the relationships between environmental gradients and observations / stations.
 
@@ -119,4 +119,24 @@ biplot(bioenv_pca)
 
 Obs: The pca results revealed that PC1 and PC2 captured high proportions of the variance, with a cumulative of 76.9%. From the biplot, Depth has high relationship with PC1 and negative relationship with PC2. Also sp1 has high relationship with PC2. sp1, sp2 and Depth has positive relationship in PC1.
 
-#Summary of the Analysis The analysis shows that the depth of the bay contain more of granite with decrease in pollution level. There is also relationship between the environmental and biological variables. In other words, the level of pollution of the bay is low and the bottom might not be productive due to the nature of the sediment.
+```{r}
+spp_depth <- bioenv %>% 
+  group_by(Sediment) %>% 
+  summarise(avg_spp = mean(total_species),
+          avg_depth = mean(Depth),
+          total_spp = sum(total_species)) %>% 
+  arrange(desc(avg_spp))
+
+spp_depth
+
+library(ggplot2)
+
+spp_plot <- ggplot(spp_depth, aes(x=Sediment, y=total_spp, fill = Sediment))+
+  geom_col()+
+  ggtitle("Bar plot showing Distribution of Total Species")
+
+spp_plot
+
+```
+
+#Summary of the Analysis: The analysis shows that the depth of the bay contain more of granite with decrease in pollution level. Relationship exists between the environmental and biological variables. In other words, the level of pollution of the bay shows a significant effect on the abundance of the species. This shows the reason for high abundance of species at the demersal of the bay and low species at pelagic region.
