@@ -1,0 +1,464 @@
+---
+title: "Assistance on R Assignment"
+author: "Azeez Olalekan Baki"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+## Question one
+
+# Assessing the penguins data from palmerpenguins package.
+
+In order to access the data, I installed the package palmerpenguins and
+make it accessible by R using the following lines of codes.
+
+```{r setup, include=TRUE}
+#install.packages("palmerpenguins")
+library(palmerpenguins)
+```
+
+To know what is in the package and view how the data looks like. I used
+the following lines of code:
+
+From the code, I observed that the data has 344 rows/response and 8
+columns/variables. The data has 3 factor variables, Species, Island and
+Sex while the other variables are numeric and integer. Also, Adelie,
+Chinstrap and Gentoo were the three penguins species the data contain.
+
+```{r}
+penguins
+str(penguins) #for the type of the data
+dim(penguins) #for dimension of the data
+```
+
+## Data cleaning
+
+Upon inspecting the data, I observed 'NA' values which will hinder some
+analysis on the data. Also, it was noticed that the data is not in the
+table or dataframe format. Therefore, I performed the following to clean
+and structure the data which was then stored using assignment operator
+into a dataset called penguins_data.
+
+```{r, echo=TRUE}
+penguins_na<- na.omit(penguins)
+penguins_data <- data.frame(penguins_na)
+head(penguins_data)
+```
+
+## Descriptive analysis on the penguins data
+
+In order to get more details of the data, I performed simple
+descriptive analysis on the data and displayed it graphically using
+boxplot. The following codes were used for the descriptive.
+
+```{r}
+summary(penguins_data)
+boxplot(bill_length_mm~species, data=penguins_data, 
+        main="Penguins Bill length", 
+        ylab = "Bill length (mm)", 
+        xlab = "Species", 
+        col="bisque")
+boxplot(bill_depth_mm~species, data=penguins_data, 
+        main="Penguins Bill depth", 
+        ylab = "Bill depth (mm)", 
+        xlab = "Species", 
+        col="bisque")
+boxplot(flipper_length_mm~species, data=penguins_data, 
+        main="Penguins flipper length", 
+        ylab = "Flipper length (mm)", 
+        xlab = "Species", 
+        col="bisque")
+boxplot(body_mass_g~species, data=penguins_data, 
+        main="Penguins Body mass", 
+        ylab = "Body mass (g)", 
+        xlab = "Species", 
+        col="bisque")
+```
+
+# Result
+
+The boxplot shows that in terms of bill length, Adelie has low
+median/mean compared to the other two species while Gentoo species has
+the highest mean values for flipper length and body mass. Outliers were
+also present in the dataset but for study purposes, they were not
+removed from the data.
+
+## Body mass mean of the penguins
+
+Since the Gentoo shows high value for body mass among the species, there
+is a need to have a look at the mean of each species. To do this, I
+performed means by grouping using the inbuilt base r function "tapply"
+
+```{r}
+mean_body_mass<-tapply(penguins_data$body_mass_g, penguins_data$species, mean) 
+mean_body_mass
+```
+
+# Result
+
+Adelie Chinstrap Gentoo (3706.164 3733.088 5092.437). The result shows high
+mean value for Gentoo (5092.437). The question that arises from this
+figure is, does the mean value significant from the others?
+
+## Significance of the body mass
+
+To determine if the mean body mass is significant among the species, I
+sorted the body mass data in terms of species and performed the
+following assumptions: 1. Check of independence of variables 2. Test of
+normality using Shapiro. This is done to determine if the data is from
+normal distribution. 3. Choice of statistics. Since we are comparing
+quantitative with qualitative data, we are in the realm of test of
+hypothesis with large numbers.
+
+#Hypothesis H0: No significant different among the means Ha: Atleasat
+one of the means is different
+
+# Separating the data
+
+```{r}
+attach(penguins_data) #To make r recognises that I will be working only with this data at the moment
+X<-penguins_data[species=="Adelie",6] # Extracting the Adelie body mass
+Y<-penguins_data[species=="Chinstrap",6] # Extracting the Chinstrap body mass
+Z<-penguins_data[species=="Gentoo",6] # Extracting the Gentoo body mass
+```
+
+## Normality test using Shapiro
+
+```{r}
+shapiro.test(X)
+shapiro.test(Y)
+shapiro.test(Z)
+```
+
+# Result
+
+The result shows that Adelie data is not normally distributed since the
+p-value is less than 0.05 while the other two are normally distributed.
+Since one of the data is not normally distributed, the non-parametric test can therefore be performed to determine the significance of the means.
+
+Choice of Test: Kruskal-Wallis
+
+```{r}
+kruskal.test(body_mass_g~species, data = penguins_data)
+pairwise.t.test(x=body_mass_g, g=species, data=penguins_data, p.adjust.method = "none")
+```
+
+# Result
+
+The result shows that we reject the null hypothesis that there is no
+significant different among the means. In other words, one mean is
+significantly different from another p\<\<0.05. pairwise.t.test was
+performed to know where the different lies. It was observed that Adelie
+and Chinstrap body mass are not significant from each other (p\>0.05).
+However, Gentoo species has mean value significantly higher than the
+other two species (p\<\<0.05).
+
+## Question two
+
+Data to be used for this question was gotten from the modules in the 12
+week tab. The data is on shrimps sampled from different families and
+locations.
+
+To load this csv data, "readr" package was installed and called using
+the library function
+
+```{r}
+#install.packages("readr")
+library(readr)
+```
+
+The data was then imported using the following code, in which the data
+is called shrimp.
+
+```{r}
+shrimp <- read.csv("dorsal_spot_data (1).csv", header = TRUE) 
+# header=TRUE, is to make r knows that our data has variable names as first row.
+```
+
+To assess the data, I used the following codes to view, look the
+structure of the data and the dimension of the data.
+
+```{r}
+head(shrimp)
+str(shrimp)
+dim(shrimp)
+```
+
+Na's were also present in the data and will be removed by using na.omit
+and the data will be saved in shrimp.
+
+```{r}
+shrimp <- na.omit(shrimp)
+str(shrimp)
+dim(shrimp)
+```
+
+Now, the NA's have been removed. From the data, we have character,
+numeric and integer variables. The data has 20 rows and 16 variables.
+
+## Descriptive statistics
+
+```{r}
+summary(shrimp)
+plot(shrimp)
+```
+
+# Result
+
+The summary function gives the simple descriptive of the variables in
+the data. The plot functions therein shows different scatterplot among
+the numerical and integer variables. Some of the variables have
+relationship among each other while some do not. To view the correlation
+better, I conducted a correlation analysis and graphically showed the
+result using the corrplot package. First, I will install the package
+
+```{r}
+#install.packages("corrplot")
+library(corrplot)
+```
+
+Since we are to use only independent variables with continuous data, I
+would extract only the continuous variables and save it in data named
+shrimp_1 using the following code.
+
+```{r}
+shrimp_1 <- shrimp[,-c(1:3,7,10,12,13)] 
+#The code means I want all the rows and removed column, 1 to 3, 7, 10,12 and 13. 
+#So, I will be left with the continuous data. To view the data in shrimp_1, I used the function view
+head(shrimp_1)
+```
+
+Then I can conduct the correlation analysis. 
+\## Correlation \#
+Hypothesis H0: No relationship among the variables 
+Ha: There is a  relationship
+
+# Assumption
+
+Test the conditions of application: - Independence of variables: YES -
+Normality, using Shapiro
+
+```{r}
+shapiro.test(shrimp_1$rostc) #The dollar sign is to assess the variables in the data
+shapiro.test(shrimp_1$rost)
+shapiro.test(shrimp_1$cl)
+```
+
+# Result
+
+Since some of the data is not normally distributed i.e p\<0.05 for
+instance the rostc variable, we are to use the spearman correlation
+method.
+
+```{r}
+corr <- cor(shrimp_1, method = "spearman")
+corr
+```
+
+## Graphically
+
+```{r}
+corrplot(corr, method = "number", type = "lower", 
+         main= "Correlation among the shrimp parameters")
+
+#To check the significance of the correlation
+cor.test(shrimp_1$cl, shrimp_1$depthn, method="spearman")
+cor.test(shrimp_1$cl, shrimp_1$comno, method="spearman")
+```
+
+# Result
+
+From the figure, It can be observed that cl has relationship with
+depthn, depthm and comno. it can be noted from the data that depthn and
+depthm are same data. It was observed that the relationship is not
+significant.
+
+## Influence of variables on size of shrimp species cl
+
+To determine the influence of all the continous variables on cl, I
+performed a simple linear regression (lm) using all the variables by
+using "." to mean all the variables. I used the function summary to view
+what is my model.
+
+```{r}
+model <- lm(cl~., data = shrimp_1)
+summary(model)
+```
+
+# Result
+
+The coefficient output shows the intercept, slopes for each variables
+and significant level. The significant level shows that depth and depthn
+are the two significant variables that can influence the shrimp size at
+significant level of 0 '\***' and 0.001 '**'. We can therefore moderate
+the model to include only the significant variables.
+
+```{r}
+model_1<- lm(cl~depth+depthn, data = shrimp_1)
+summary(model_1)
+```
+
+# Result
+
+It can be observed that at the absence of all other factors, depthn has
+no significant effect while depth has significant effect at 0.1 alpha
+level. The R-squared values shows that 57% of the response variable i.e
+size of shrimp can be predicted from the variables. In other words, 57%
+of the variation in the data was taken into account for the prediction
+of the cl response. The p-value shows value less than alpha value of
+0.05, indicating significant response of cl from depth and depthn. The
+regression model can be computed as follow:
+
+cl = 0.02320depth + 6.40509 cl = -1.01218depthn + 6.40509
+
+# Model plot
+
+```{r}
+plot(model_1)
+```
+
+# Conclusion
+
+From the result, we can say that the size of shrimp species depend to on
+the depth at which the species is found. Invariably, shrimps found at
+deeper depth has more size than those found at the surface of the
+sediment.
+
+## Question Three
+
+Data to be used for this question was gotten from the modules in the 12
+week tab. The data is on four crustacean species sampled from four
+different size for four years. First, I load the data to access what is
+in the data.
+
+```{r}
+crustacean <- read.csv("crustacean data.csv", header = TRUE)
+head(crustacean)
+```
+
+## Research Questions
+
+1.  is there a significant different in terms of size among the three
+    crustacean species?.
+2.  is the size also different among the sex?
+3.  is there a relationship between the grade of the species and size?
+4.  relationship between species and grade?
+
+## Descriptive analysis
+
+```{r}
+summary(crustacean)
+plot(density(crustacean$Size), type = "l", col="blue", main = "Distribution of the crustacean size", ylab = "Probability", xlab = "size")
+boxplot(Size~Species, data = crustacean, col="bisque",  main = "Distribution of the crustacean size by species", ylab = "Size (mm)", xlab = "Species")
+boxplot(Size~Grade, data = crustacean, col="bisque", main = "Distribution of the crustacean size by Grades", ylab = "Size (mm)", xlab = "Species")
+size_spp<-tapply(crustacean$Size, crustacean$Species, mean); size_spp
+size_spp_sd<-tapply(crustacean$Size, crustacean$Species, sd); size_spp_sd
+size_sex<-tapply(crustacean$Size, crustacean$Sex, mean); size_sex
+size_sex_sd<-tapply(crustacean$Size, crustacean$Sex, sd); size_sex_sd
+barplot(size_sex, col = "bisque", ylab = "Mean value (mm)", xlab="Sex")
+```
+
+## Statistical test
+
+is there a significant different in terms of size among the three
+crustacean species?
+
+Assumptions: 1. Check of independence of variables 2. Test of normality
+using Shapiro. This is done to determine if the data is from normal
+distribution. 3. Choice of statistics. Since we are comparing
+quantitative with qualitative data, we are in the realm of test of
+hypothesis with large numbers.
+
+#Hypothesis H0: No significant different among the means Ha: Atleasat
+one of the means is different
+
+# Separating the data
+
+```{r}
+attach(crustacean) #To make r recognises that I will be working only with this data at the moment
+A<-crustacean[Species=="Crab",8]# Extracting the crab 
+B<-crustacean[Species=="Lobster",8] # Extracting the Lobster 
+C<-crustacean[Species=="Velvet",8] # Extracting the Velvet
+```
+
+## Normality test using Shapiro
+
+This test will not be useful since the data is large enough and any
+small deviation will be significant. Therefore, we assume the data is
+normally distributed.
+
+## Homogeneity of variance/Homoscedasticity
+
+```{r}
+bartlett.test(Size~Species, data = crustacean)
+```
+
+# Result
+
+The H0 is rejected the variance is not equal between the species.
+Therefore, we are to perform non-parametric test
+
+```{r}
+kruskal.test(Size~Species, data = crustacean)
+pairwise.t.test(x=Size, g=Species, data=crustacean, p.adjust.method = "none")
+```
+
+# Result
+
+The H0 is rejected because p\<\<0.05. Therefore, the size of the
+crustacean are significantly different from each other. Since the sizes
+differ the question can be what can cause the different?
+
+## Two way Anova and linear model
+
+In order to determine the factors responsible for the different in size
+among the species, Two way Anova was conducted. Simple linear model was
+then used to show variables that can predict the size.
+
+```{r}
+Anova2 <-aov(Size~Species*Site*Sex, data = crustacean)
+summary(Anova2)
+
+mod <- lm(Size~Species+Site+Sex, data = crustacean)
+summary(mod)
+```
+
+# Result
+
+The result shows that the size of the species are significantly
+different from each other in terms of all the variable individually and
+in combination at except sex at 0.01 alpha value. Meanwhile, the linear
+model shows that the species type and the site of samples have
+significant impact on the size of the crustacean p\<\<0.05, with 73%
+coefficient of determination.
+
+## relationship between species and grade?
+
+Formulation of hypotheses: - Ho: no relationship between the 2
+qualitative variables. - Ha: relationship between the 2 qualitative
+variables. Choice of the test: - chi-square test (test on the
+contingency table). - The Fisher's exact test. Condition to use the
+chi-square test: N larger than 50.
+
+```{r}
+tab<-table(Grade,Species);plot(tab)
+chisq.test(tab)
+```
+
+# Result
+
+The test returns the p-value which represents the probability to wrongly
+reject Ho. Ho is rejected when p\<0.05. In this case, Ho is rejected
+There is significant relationship between the 2 variables for a type I
+error of 5%.
+
+## Conclusion
+
+From the analysis, we can say the size of crustacean depends on several
+factors and the species of the crustacean.
