@@ -1,0 +1,240 @@
+---
+title: "DAES Practical Assignment"
+author: "Azeez Olalekan, Baki"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+## Solution to Data Analysis Assignment
+
+# Setting working directory
+
+```{r setup, include=FALSE}
+getwd()
+
+setwd("C:/Users/dell/Downloads/MER Course/DAES 2022")
+
+getwd()
+```
+
+## Install Packages
+
+1.  ggplot2
+2.  dplyr
+3.  hrhrthemes
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(ggpubr)
+library(ggsci)
+library(pastecs)
+```
+
+## Importing the SOMLIT Dataset
+
+```{r}
+somlit <- read.table("SOMLIT.txt", header = T)
+head(somlit)
+```
+
+1.  What are the variables in the dataset?
+
+```{r}
+variables <- colnames(somlit)
+variables
+
+ncol(somlit)
+```
+
+2.  How many observations are there in the dataset?
+
+```{r}
+observations <- nrow(somlit)
+
+observations
+```
+
+## Exercise 2 : Time series analysis of chlorophyll-a concentration CHLA
+
+-   Compute the basic descriptive statistics of CHLA
+-   Generate the histogram of the relative frequency of CHLA (see Fig1)
+-   Generate the time series of CHLA (see Fig2)
+
+```{r, echo=TRUE}
+descriptive_stat_CHLA <- summary(somlit$CHLA)
+descriptive_stat_CHLA
+
+summary_CHLA <- data.frame(Statistics = round(stat.desc(somlit$CHLA),2))
+summary_CHLA
+
+histogram_CHLA <-hist(somlit$CHLA)
+
+barplot(histogram_CHLA$density,
+        main = "Relative Distribution of the Chlorophyl-a",
+        xlab = expression(paste("CHLA (",mu,"g/L)")),
+        ylab = "Relative frequency",
+        names.arg = histogram_CHLA$mids,
+        col = "purple")
+
+
+somlit$Year <-as.Date(somlit$DATE, "%d/%m/%Y")
+
+plot(somlit$Year, somlit$CHLA, 
+     type = "b",
+     main = "Time Series of CHLA",
+     xlab = "Year",
+     ylab = expression(paste("CHLA (",mu,"g/L)")),
+     col = "blue")
+
+```
+
+## Exercise 3 : Analysis of seasonal variability of CHLA
+
+-   Compute the mean and the standard deviation of CHLA per season
+    (Spring, Summer, Autumn, Winter)
+
+```{r}
+CHLA_seasons <- somlit %>%
+  group_by(Season) %>% 
+  summarise(Avg_CHLA = round(mean(CHLA),3),
+            Std_CHLA = round(sd(CHLA),3)) %>% 
+  arrange(desc(Avg_CHLA))
+CHLA_seasons
+  
+```
+
+-   Display the basic descriptive statistics of CHLA per season (Fig3)
+
+```{r, echo=TRUE}
+box_CHLA <- ggplot(data = somlit, aes(x=reorder(Season, CHLA), 
+                                      y= CHLA, 
+                                      fill= reorder(Season, CHLA)))+
+  geom_boxplot()+
+  labs(title = "CHLA: Seasonal Distribution of Chlorophy a",
+       subtitle = " The Four Seasons: Fall, Summer, Winter, Spring",
+       x="Seasons",
+       y="CHLA (micro-g/L)",
+       caption = "Data: Somlit by Prof Lubac",
+       fill = "Season") +
+  theme_classic()+
+  scale_fill_aaas()
+box_CHLA
+```
+
+## Exercise 4 : Detection of spring anomalies
+
+-   Standardize CHLA variable (subtract the mean and divide by the
+    standard deviation)
+-   Find the date associated with CHLA values higher than 2.
+
+```{r}
+somlit<- somlit %>% 
+  mutate(Standardize_CHLA = (CHLA-mean(CHLA))/sd(CHLA))
+standard_CHLA <-data.frame(somlit$Standardize_CHLA)
+head(standard_CHLA)
+
+CHLA_higher_than_2 <- somlit %>% filter(CHLA>2)
+date_2<-data.frame(CHLA_higher_than_2$DATE)
+head(date_2)
+```
+
+## Exercise 5 : Relationship between CHLA and SPM
+
+-   Display the relationship between CHLA and SPM (Fig4)
+
+```{r, echo=TRUE}
+CHLA_SPM <- ggplot(somlit, aes(x= CHLA, y= SPM, color = Season))+
+  geom_point()+
+  labs(title = "Relationship between CHLA and SPM",
+       x=expression(paste("CHLA (",mu,"g/L)")),
+       y="SPM",
+       caption = "Data: Somlit by Prof Lubac",
+       fill = "Season") +
+  theme_classic()+
+  scale_fill_aaas()
+  
+CHLA_SPM
+```
+
+## Exercise 6: Reproduce the same plots
+
+Basic statistical distribution Name of the distribution Name of the R
+function Parameters Binomiale binom size, prob Normale norm mean, sd
+Khi-square chisq df Student t df Fisher f df1, df2 For each of these
+distributions, you have 4 functions : ddistname, pdistname, qdistname,
+rdistname, to calcualte respectively the PDF, the cumulative
+distribution function, the quantile function (gives the result x such as
+F(X=x) = p) and to generate random outcomes.
+
+```{r, echo=TRUE}
+#Binomial
+binomiale <- dbinom(x=(0:5), size = 5, prob = 0.5)
+
+plot(binomiale, 
+     xlim = c(0,20), 
+     ylim = c(0,0.4), 
+     col= "black", 
+     pch = 15, 
+     ylab = "", 
+     xlab = "")
+points(dbinom(x=(0:10), size = 10, prob = 0.5), 
+       col = "red", pch = 16) 
+points(dbinom(x=(0:20), size = 20, prob = 0.5), 
+       col = "green", pch = 17)
+legend("top")
+
+pbinom(q=(0:5), size = 5, prob = 0.5)
+qbinom(p=(0.95), size = 5, prob = 0.5)
+rbinom(n=(0:5), size = 5, prob = 0.5)
+
+#Normal-distribution
+x <- seq(-4, 4, 0.1)
+plot(x, dnorm(x, mean = 0, sd = 1), type = "l",
+     ylim = c(0.0, 0.4), ylab = "", xlab = "", col = "black", lty=2, lwd=2)
+lines(x, dnorm(x, mean = 0, sd = 1.1), col = "green", lty=2, lwd=2)
+lines(x, dnorm(x, mean = 0, sd = 1.05), col = "blue", lty=4, lwd=2)
+lines(x, dnorm(x, mean= 0, sd=1.2), col= "red", lty=1, lwd=2)
+
+```
+
+## Exercise 7 : Problem !
+
+Packets of seeds of Zostera are commercially available. In a packet
+there are 15 seeds and each seed gives at most a foot of Zostera.
+Seagrasses have a probability of germination equal to 0.85.
+
+6.1. What is the minimum number of packets that a PhD student must
+purchase to obtain at least 200 Zostera foot with a probability greater
+than or equal to 0.95?
+
+6.2. The Phd student has 100 euros to purchase the seeds. A packet is
+sold 4.50 euros. How many feet should he expect to get?
+
+```{r}
+#X- B{15, 0.85^ny} = 0.95
+
+ny <- log(0.0034)/log(0.85)
+ny #seeds
+
+#6.1: 35seeds needed equivalent to 3 packets
+#6.2: He should be expecting 330feet of Zostera
+
+
+#6.1 Correction
+qbinom(p=0.95, size= 200, 0.85)
+plot(200:230, qbinom(0.95,200:230,0.85))
+abline(h=200, v=225)
+
+#6.2: 
+fd <-dbinom(c(0:330), 330, 0.85)
+plot(fd~c(0:330),xlim=c(240,300), ylim=c(0,0.08), type="p")
+plot(cumsum(fd)~c(0:330),xlim=c(240,300), ylim=c(0,1), type="p")
+```
