@@ -47,7 +47,7 @@ head(test)
 
 ######### Confusion Matrix
 pre1 = as.factor(ifelse(pre>0.5,1,0))
-t <- table(prediction=pre, actual=train$admit)
+t <- table(prediction=pre1, actual=train$admit)
 t
 
 # Create a confusion matrix
