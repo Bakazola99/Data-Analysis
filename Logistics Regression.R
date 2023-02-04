@@ -49,3 +49,13 @@ head(test)
 pre1 = ifelse(pre>0.5,1,0)
 t <- table(prediction=pre, actual=train$admit)
 t
+
+# Create a confusion matrix
+confusion_matrix <- confusionMatrix(train$admit, pre1)
+
+# Extract accuracy, precision, recall, and F1-score from the confusion matrix
+accuracy <- confusion_matrix$overall[1]
+precision <- confusion_matrix$byClass[1]
+recall <- confusion_matrix$byClass[2]
+f1_score <- confusion_matrix$F1
+
