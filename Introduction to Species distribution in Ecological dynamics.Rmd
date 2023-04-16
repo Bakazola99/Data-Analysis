@@ -81,13 +81,13 @@ hooded_scatter_plot <- ggplot(data = hooded_complete_data,
 hooded_scatter_plot
 
 hooded_barplot <- ggplot(data=hooded_complete_data, 
-                         aes(x=present_factor, y=tmin, color=present))+
+                         aes(x=present_factor, y=tmin, color=present_factor))+
                   geom_col()+
                   ggtitle("Hooded Frequency")
 hooded_barplot
 
 hooded_hist <- ggplot(data=hooded_complete_data, 
-                      aes(tmin, color= "yellow"))+
+                      aes(tmin, color= present_factor))+
                geom_histogram()+
                ggtitle("Temperature Distribution")
 hooded_hist
@@ -170,7 +170,7 @@ future_location
 plot(future_location,ext=extent(-140,-50, 25, 60))
 points(presence[c("lon", "lat")],pch="*", cex= 0.3)
 
-plot(future_location > tre,ext=extent(-140,-50, 25, 60))
+plot(future_location > threshold,ext=extent(-140,-50, 25, 60))
 points(presence[c("lon", "lat")],pch="*", cex= 0.3)
 ```
 
