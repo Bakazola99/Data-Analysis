@@ -1,0 +1,1735 @@
+---
+title: "Olivine weathering in coastal environment"
+author: "Baki, Azeez Olalekan"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Libraries
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r Libraries, message=FALSE, warning=FALSE}
+library(streamgraph)
+library(ggplot2)
+library(babynames)
+library(dplyr)
+library(hrbrthemes)
+library(viridis)
+library(githubinstall)
+library(ggstatsplot)
+library(ggsci)
+library(patchwork)
+library(dygraphs)
+library(tidyr)
+library(corrgram)
+library(corrplot)
+library(ggpubr)
+library(tidyverse)
+```
+
+# Description of the data
+### loading of the data
+```{r}
+data <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/descp.csv")
+data
+```
+
+#### Description in terms of layers
+```{r}
+# water layer
+water <- data %>% filter(Layer=="water") %>% 
+  group_by(Treatment) %>% 
+  summarise(avg_TA=mean(TA)) %>% 
+  arrange(desc(avg_TA))
+water
+
+# oliine layer
+olivine <- data %>% filter(Layer=="olivine") %>% 
+  group_by(Treatment) %>% 
+  summarise(avg_TA=mean(TA)) %>% 
+  arrange(desc(avg_TA))
+olivine
+
+# sediment layer
+sediment <- data %>% filter(Layer=="sediment") %>% 
+  group_by(Treatment) %>% 
+  summarise(avg_TA=mean(TA)) %>% 
+  arrange(desc(avg_TA))
+sediment
+
+# distribution of water layer
+water_TA <-data %>% filter(Layer=="water")
+plot(density(water_TA$TA))
+```
+
+## Differences among the treatment in terms of water in all the observations
+
+```{r Spatial data, message=FALSE, warning=FALSE}
+plt_water <- ggbetweenstats(data = water_TA, x = Treatment, 
+                            y = TA, pairwise.display = "significant",
+                            bf.message=F,
+                            digits = 0L,
+                            point.args = list(position = ggplot2::position_jitterdodge(dodge.width = 0.6), 
+                                              size = 1, stroke = 0.5, na.rm = TRUE),
+                            boxplot.args = list(width = 0.3, alpha = 0.2, na.rm = TRUE),
+                            violin.args = list(width = 0, linwidth=0))+
+  theme_classic()+
+  theme(text = element_text(size = 4, color = "black"),
+        plot.subtitle = element_text(size = 10, face = "bold",color="black"),
+        axis.text = element_text(size = 10, color = "black", face = "bold"),
+        axis.title = element_text(size = 12),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        legend.position = "none")+
+  labs(x="Treatment", y= "Total Alkalinity (\u00B5mol/L)")
+plt_water
+ggsave("plt_water.png", plt_water,width = 8,height = 7,units = 'in', dpi = 500)
+
+```
+### 13days in water layer: coarse with olivine and Fine with olivine
+```{r 13 days, message=FALSE, warning=FALSE}
+TA_13 <- read.csv("TA_13days.csv")
+TA_13 <- TA_13 %>% filter(Treatment %in% c('Coarse with olivine', 'Fine with olivine'))
+TA_13_water <- TA_13 %>% filter(Layer=="water")
+
+plt_TA_13_water <-ggbetweenstats(data = TA_13_water, x = Treatment, 
+               y = TA, pairwise.display = "signifant",
+               bf.message=F,
+               digits = 0L,
+               centrality.label.args = list(size = 4, nudge_x = 0.4, segment.linetype = 4,
+                                            min.segment.length = 0),
+               point.args = list(position = ggplot2::position_jitterdodge(dodge.width = 0.6), 
+                                 size = 1, stroke = 0.5, na.rm = TRUE),
+               boxplot.args = list(width = 0.3, alpha = 0.2, na.rm = TRUE, fontface="bold"),
+               violin.args = list(width = 0, linwidth=0))+
+  theme_classic()+
+  theme(text = element_text(size = 4, color = "black", face = "bold"),
+        plot.subtitle = element_text(size = 15, face = "bold",color="black"),
+        axis.text = element_text(size = 15, color = "black", face = "bold"),
+        axis.title = element_text(size = 15),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        legend.position = "none")+
+  labs(x="Treatment", y= "Total Alkalinity (\u00B5mol/L)")
+plt_TA_13_water
+ggsave("coarse vs fine spatial_13.png", plt_TA_13_water,width = 8,height = 7,units = 'in', dpi = 500)
+```
+
+### 13days in olivine layer: coarse with olivine and Fine with olivine
+```{r}
+TA_13 <- TA_13 %>% filter(Treatment %in% c('Coarse with olivine', 'Fine with olivine'))
+TA_13_olivine <- TA_13 %>% filter(Layer=="olivine")
+
+plt_TA_13_olivine <-ggbetweenstats(data = TA_13_olivine, x = Treatment, 
+                                 y = TA, pairwise.display = "significant",
+                                 centrality.label.args = list(size = 4, nudge_x = 0.4, segment.linetype = 4,
+                                                              min.segment.length = 0),
+                                 bf.message=F,
+                                 digits = 0L,
+                                 point.args = list(position = ggplot2::position_jitterdodge(dodge.width = 0.6), 
+                                                   size = 1, stroke = 0.5, na.rm = TRUE),
+                                 boxplot.args = list(width = 0.3, alpha = 0.2, na.rm = TRUE),
+                                 violin.args = list(width = 0, linwidth=0))+
+  theme_classic()+
+  theme(text = element_text(size = 4, color = "black", face = "bold"),
+        plot.subtitle = element_text(size = 15, face = "bold",color="black"),
+        axis.text = element_text(size = 15, color = "black", face = "bold"),
+        axis.title = element_text(size = 15),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        legend.position = "none")+
+  labs(x="Treatment", y= "Total Alkalinity (\u00B5mol/L)")
+plt_TA_13_olivine
+ggsave("coarse vs fine spatial_13_olivine.png", plt_TA_13_olivine,width = 8,height = 7,units = 'in', dpi = 500)
+
+```
+
+### 13days in sediment layer: coarse with olivine and Fine with olivine
+
+```{r}
+TA_13 <- TA_13 %>% filter(Treatment %in% c('Coarse with olivine', 'Fine with olivine'))
+TA_13_sediment <- TA_13 %>% filter(Layer=="sediment")
+
+plt_TA_13_sediment <-ggbetweenstats(data = TA_13_sediment, x = Treatment, 
+                                   y = TA, pairwise.display = "significant",
+                                   bf.message=F,
+                                   digits = 0L,
+                                   centrality.label.args = list(size = 4, nudge_x = 0.4, segment.linetype = 4,
+                                                                min.segment.length = 0),
+                                   point.args = list(position = ggplot2::position_jitterdodge(dodge.width = 0.6), 
+                                                     size = 1, stroke = 0.5, na.rm = TRUE),
+                                   boxplot.args = list(width = 0.3, alpha = 0.2, na.rm = TRUE),
+                                   violin.args = list(width = 0, linwidth=0))+
+  theme_classic()+
+  theme(text = element_text(size = 4, color = "black", face = "bold"),
+        plot.subtitle = element_text(size = 15, face = "bold",color="black"),
+        axis.text = element_text(size = 15, color = "black", face = "bold"),
+        axis.title = element_text(size = 15),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        legend.position = "none")+
+  labs(x="Treatment", y= "Total Alkalinity (\u00B5mol/L)")
+plt_TA_13_sediment
+
+ggsave("coarse vs fine spatial_13_sediment.png", plt_TA_13_sediment,width = 8,height = 7,units = 'in', dpi = 500)
+```
+
+
+### 13days in water layer: coarse with olivine/coarse without and Fine with olivine/fine without olivine
+```{r 13 days all treatment, message=FALSE, warning=FALSE}
+TA_13 <- read.csv("TA_13days.csv")
+all <- TA_13 %>% filter(Layer=="water")
+all <- all[-c(67:84),]
+plt_TA_13_all <-ggbetweenstats(data = all, x = Treatment, 
+                                 y = TA, pairwise.display = "signifant",
+                                 bf.message=F,
+                                 digits = 0L,
+                                 centrality.label.args = list(size = 4, nudge_x = 0.4, segment.linetype = 4,
+                                                              min.segment.length = 0),
+                                 point.args = list(position = ggplot2::position_jitterdodge(dodge.width = 0.6), 
+                                                   size = 1, stroke = 0.5, na.rm = TRUE),
+                                 boxplot.args = list(width = 0.3, alpha = 0.2, na.rm = TRUE, fontface="bold"),
+                                 violin.args = list(width = 0, linwidth=0))+
+  theme_classic()+
+  theme(text = element_text(size = 4, color = "black", face = "bold"),
+        plot.subtitle = element_text(size = 15, face = "bold",color="black"),
+        axis.text = element_text(size = 10.4, color = "black", face = "bold"),
+        axis.title = element_text(size = 15),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        legend.position = "none",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))+
+  labs(x="Treatment", y= "Total Alkalinity (\u00B5mol/L)")
+plt_TA_13_all
+ggsave("coarse vs fine spatial_13_All.png", plt_TA_13_all,width = 8,height = 7,units = 'in', dpi = 500)
+
+```
+## Water layer: Autoclaved vs fine with olivine
+```{r message=FALSE, warning=FALSE}
+TA_13 <- read.csv("TA_13days.csv")
+TA_13_auto <- TA_13 %>% filter(Treatment %in% c('Autoclaved ', 'Fine with olivine'))
+TA_13_auto <- TA_13_auto %>% filter(Layer=="water")
+
+plt_TA_13_auto_water <-ggbetweenstats(data = TA_13_auto, x = Treatment, 
+                                 y = TA, pairwise.display = "signifant",
+                                 bf.message=F,
+                                 digits = 0L,
+                                 centrality.label.args = list(size = 4, nudge_x = 0.4, segment.linetype = 4,
+                                                              min.segment.length = 0),
+                                 point.args = list(position = ggplot2::position_jitterdodge(dodge.width = 0.6), 
+                                                   size = 1, stroke = 0.5, na.rm = TRUE),
+                                 boxplot.args = list(width = 0.3, alpha = 0.2, na.rm = TRUE, fontface="bold"),
+                                 violin.args = list(width = 0, linwidth=0))+
+  scale_y_continuous(breaks=seq(min(2000), max(5000), by=1000), limits = c(2000, max(5000)))+
+  theme_classic()+
+  theme(text = element_text(size = 4, color = "black", face = "bold"),
+        plot.subtitle = element_text(size = 15, face = "bold",color="black"),
+        axis.text = element_text(size = 15, color = "black", face = "bold"),
+        axis.title = element_text(size = 15),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        legend.position = "none",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))+
+  labs(x="Treatment", y= "Total Alkalinity (\u00B5mol/L)")
+plt_TA_13_auto_water
+ggsave("coarse vs fine spatial_13_auto_water.png", plt_TA_13_auto_water,width = 8,height = 7,units = 'in', dpi = 500)
+
+
+```
+
+## Olivine layer: Autoclaved vs fine with olivine
+
+```{r message=FALSE, warning=FALSE}
+TA_13 <- read.csv("TA_13days.csv")
+TA_13_auto <- TA_13 %>% filter(Treatment %in% c('Autoclaved ', 'Fine with olivine'))
+TA_13_auto_olivine <- TA_13_auto %>% filter(Layer=="olivine")
+
+plt_TA_13_auto_olivine <-ggbetweenstats(data = TA_13_auto_olivine, x = Treatment, 
+                                 y = TA, pairwise.display = "signifant",
+                                 bf.message=F,
+                                 digits = 0L,
+                                 centrality.label.args = list(size = 4, nudge_x = 0.4, segment.linetype = 4,
+                                                              min.segment.length = 0),
+                                 point.args = list(position = ggplot2::position_jitterdodge(dodge.width = 0.6), 
+                                                   size = 1, stroke = 0.5, na.rm = TRUE),
+                                 boxplot.args = list(width = 0.3, alpha = 0.2, na.rm = TRUE, fontface="bold"),
+                                 violin.args = list(width = 0, linwidth=0))+
+  scale_y_continuous(breaks=seq(min(2000), max(5000), by=1000), limits = c(2000, max(5000)))+
+  theme_classic()+
+  theme(text = element_text(size = 4, color = "black", face = "bold"),
+        plot.subtitle = element_text(size = 15, face = "bold",color="black"),
+        axis.text = element_text(size = 15, color = "black", face = "bold"),
+        axis.title = element_text(size = 15),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        legend.position = "none",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.x = unit(.20, "cm"))+
+  labs(x="Treatment", y= "Total Alkalinity (\u00B5mol/L)")
+plt_TA_13_auto_olivine
+ggsave("coarse vs fine spatial_13_auto_olivine.png", plt_TA_13_auto_olivine,width = 8,height = 7,units = 'in', dpi = 500)
+
+```
+
+## Sediment layer: Autoclaved vs fine with olivine
+
+```{r}
+TA_13 <- read.csv("TA_13days.csv")
+TA_13_auto <- TA_13 %>% filter(Treatment %in% c('Autoclaved ', 'Fine with olivine'))
+TA_13_auto_sediment <- TA_13_auto %>% filter(Layer=="sediment")
+
+plt_TA_13_auto_sediment <-ggbetweenstats(data = TA_13_auto_sediment, x = Treatment, 
+                                 y = TA, pairwise.display = "signifant",
+                                 bf.message=F,
+                                 digits = 0L,
+                                 centrality.label.args = list(size = 4, nudge_x = 0.4, segment.linetype = 4,
+                                                              min.segment.length = 0),
+                                 point.args = list(position = ggplot2::position_jitterdodge(dodge.width = 0.6), 
+                                                   size = 1, stroke = 0.5, na.rm = TRUE),
+                                 boxplot.args = list(width = 0.3, alpha = 0.2, na.rm = TRUE, fontface="bold"),
+                                 violin.args = list(width = 0, linwidth=0))+
+  theme_classic()+
+  theme(text = element_text(size = 4, color = "black", face = "bold"),
+        plot.subtitle = element_text(size = 15, face = "bold",color="black"),
+        axis.text = element_text(size = 15, color = "black", face = "bold"),
+        axis.title = element_text(size = 15),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        legend.position = "none")+
+  labs(x="Treatment", y= "Total Alkalinity (\u00B5mol/L)")
+plt_TA_13_auto_sediment
+ggsave("coarse vs fine spatial_13_auto_sediment.png", plt_TA_13_auto_sediment,width = 8,height = 7,units = 'in', dpi = 500)
+```
+
+```{r}
+TA_13 <- read.csv("TA_13days.csv")
+Tot_alk_avg <-ggplot(TA_13, aes(y=TA, x=Treatment, fill = Layer)) + 
+  geom_boxplot() +
+  scale_fill_manual(values = c("seagreen","gold2", "royalblue"))  +
+  ggtitle("") +
+  theme_classic() +
+  labs(x="Treatment", y= "Total Alkalinity (\u00B5mol/L)", fill="Layers") +
+  theme(axis.text = element_text(face = "bold", colour = "black"),
+        axis.title = element_text(face = "bold", colour = "black"),
+        legend.text = element_text(color = "black", face = "bold"),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        axis.text.x = element_text(angle = 0, vjust = 0.1))
+Tot_alk_avg
+ggsave("TA.png", Tot_alk_avg,width = 7,height = 6,units = 'in', dpi = 500)
+
+p <-ggbetweenstats(data = TA_13, x = Layer, 
+                                 y = TA, pairwise.display = "signifant",
+                                 bf.message=F,
+                                 digits = 0L,
+                                 centrality.label.args = list(size = 4, nudge_x = 0.4, segment.linetype = 4,
+                                                              min.segment.length = 0),
+                                 point.args = list(position = ggplot2::position_jitterdodge(dodge.width = 0.6), 
+                                                   size = 1, stroke = 0.5, na.rm = TRUE),
+                                 boxplot.args = list(width = 0.3, alpha = 0.2, na.rm = TRUE, fontface="bold"),
+                                 violin.args = list(width = 0, linwidth=0))+
+  theme_classic()+
+  theme(text = element_text(size = 4, color = "black", face = "bold"),
+        plot.subtitle = element_text(size = 15, face = "bold",color="black"),
+        axis.text = element_text(size = 15, color = "black", face = "bold"),
+        axis.title = element_text(size = 15),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        legend.position = "none")+
+  labs(x="Treatment", y= "Total Alkalinity (\u00B5mol/L)")
+p
+```
+
+
+# Time series: Coarse with Olivine vs Fine with olivine (Total Alkalinity)
+```{r}
+data_1 <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/temporaldata1.csv")
+
+data_2 <- data_1 %>% filter(Treatment %in% c('Coarse with olivine', 'Fine with olivine'))
+
+Tot_alk <-data_2 %>% 
+  ggplot(aes(x=Time, y=Tot_alk, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk-std, ymax = Tot_alk+std, width=1.5))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Tot_alk
+ggsave("Tot_alk.png", plot = Tot_alk, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+## Coarse with olivine
+```{r Coarse with olivine parameters, warning=FALSE}
+data_1 <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/temporaldata1.csv")
+
+data_2_c <- data_1 %>% filter(Treatment %in% 'Coarse with olivine')
+
+Tot_alk <-data_2_c %>% 
+  ggplot(aes(x=Time, y=Tot_alk, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk-std, ymax = Tot_alk+std, width=1.5))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(1000), max(5000), by=500), limits = c(1000, max(3500)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Tot_alk
+
+
+##pH
+data_2_pH <- data_1 %>% filter(Treatment %in% 'Coarse with olivine')
+pH <- data_2_pH %>% 
+  ggplot(aes(x=Time, y=pH, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = pH - std_pH, ymax = pH + std_pH), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(7.0), max(8.6), by=0.2), limits = c(7.0, max(8.6)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="", y= "pH", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+pH
+
+## Si
+data_2_Si <- data_1 %>% filter(Treatment %in% 'Coarse with olivine')
+Si <- data_2_Si %>% 
+  ggplot(aes(x=Time, y=Si, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Si - std_Si, ymax = Si + std_Si), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(10), max(70), by=10), limits = c(10, max(70)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Si (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Si
+
+##DIC
+data_DIC <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/DIC.csv")
+
+data_2_DIC <- data_DIC %>% filter(Treatment %in% 'Coarse with olivine')
+
+Tot_DIC <-data_2_DIC %>% 
+  ggplot(aes(x=Time, y=DIC, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = DIC-std_dic, ymax = DIC+std_dic, width=2))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(20), max(40), by=5), limits = c(20, max(40)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "DIC (mg/kg)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Tot_DIC
+
+## Combined coarse parameters
+(Tot_alk+pH)/(Tot_DIC+Si)
+```
+
+## Fine with olivine
+
+```{r Combined parameters for Fine with olivine, message=FALSE, warning=FALSE}
+data_1 <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/temporaldata1.csv")
+
+data_2_c <- data_1 %>% filter(Treatment %in% 'Fine with olivine')
+
+Tot_alk <-data_2_c %>% 
+  ggplot(aes(x=Time, y=Tot_alk, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk-std, ymax = Tot_alk+std, width=1.5))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(1000), max(6000), by=1000), limits = c(1000, max(6000)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Tot_alk
+
+
+##pH
+data_2_pH <- data_1 %>% filter(Treatment %in% 'Fine with olivine')
+pH <- data_2_pH %>% 
+  ggplot(aes(x=Time, y=pH, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = pH - std_pH, ymax = pH + std_pH), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(7), max(8.5), by=.4), limits = c(7, max(8.5)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="", y= "pH", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+pH
+
+## Si
+data_2_Si <- data_1 %>% filter(Treatment %in% 'Fine with olivine')
+Si <- data_2_Si %>% 
+  ggplot(aes(x=Time, y=Si, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Si - std_Si, ymax = Si + std_Si), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(0), max(70), by=10), limits = c(0, max(70)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Si (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Si
+
+##DIC
+data_DIC <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/DIC.csv")
+
+data_2_DIC <- data_DIC %>% filter(Treatment %in% 'Fine with olivine')
+
+Tot_DIC <-data_2_DIC %>% 
+  ggplot(aes(x=Time, y=DIC, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = DIC-std_dic, ymax = DIC+std_dic, width=2))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(20), max(60), by=10), limits = c(20, max(60)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "DIC (mg/kg)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Tot_DIC
+
+## Combined coarse parameters
+(Tot_alk+pH)/(Tot_DIC+Si)
+```
+
+## Coarse without olivine
+
+```{r Combined parameters for coarse without olivine, message=FALSE, warning=FALSE}
+data_1 <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/temporaldata1.csv")
+
+data_2_c <- data_1 %>% filter(Treatment %in% 'Coarse without olivine')
+
+Tot_alk <-data_2_c %>% 
+  ggplot(aes(x=Time, y=Tot_alk, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk-std, ymax = Tot_alk+std, width=1.5))+
+  scale_color_manual(values = c("gold2", "navyblue"))+
+  scale_y_continuous(breaks=seq(min(1000), max(5000), by=1000), limits = c(1000, max(5000)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Tot_alk
+
+
+##pH
+data_2_pH <- data_1 %>% filter(Treatment %in% 'Coarse without olivine')
+pH <- data_2_pH %>% 
+  ggplot(aes(x=Time, y=pH, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = pH - std_pH, ymax = pH + std_pH), width = 2)+
+  scale_y_continuous(breaks=seq(min(7), max(8), by=0.2), limits = c(7, max(8)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  scale_color_manual(values = c("gold2", "navyblue"))+
+  theme_minimal()+
+  labs(x="", y= "pH", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+pH
+
+## Si
+data_2_Si <- data_1 %>% filter(Treatment %in% 'Coarse without olivine')
+Si <- data_2_Si %>% 
+  ggplot(aes(x=Time, y=Si, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Si - std_Si, ymax = Si + std_Si), width = 2)+
+  scale_color_manual(values = c("gold2","navyblue"))+
+  scale_y_continuous(breaks=seq(min(20), max(100), by=10), limits = c(20, max(100)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Si (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Si
+
+##DIC
+data_DIC <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/DIC.csv")
+
+data_2_DIC <- data_DIC %>% filter(Treatment %in% 'Coarse without olivine')
+
+Tot_DIC <-data_2_DIC %>% 
+  ggplot(aes(x=Time, y=DIC, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = DIC-std_dic, ymax = DIC+std_dic, width=2))+
+  scale_color_manual(values = c("gold2", "navyblue"))+
+  scale_y_continuous(breaks=seq(min(20), max(45), by=5), limits = c(20, max(45)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "DIC (mg/kg)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Tot_DIC
+
+## Combined coarse parameters
+(Tot_alk+pH)/(Tot_DIC+Si)
+```
+
+## Fine without olivine
+
+```{r Fine without olivine, message=FALSE, warning=FALSE}
+data_1 <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/temporaldata1.csv")
+
+data_2_c <- data_1 %>% filter(Treatment %in% 'Fine without olivine')
+
+Tot_alk <-data_2_c %>% 
+  ggplot(aes(x=Time, y=Tot_alk, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk-std, ymax = Tot_alk+std, width=1.5))+
+  scale_color_manual(values = c("gold2", "navyblue"))+
+  scale_y_continuous(breaks=seq(min(1000), max(4000), by=1000), limits = c(1000, max(4000)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Tot_alk
+
+
+##pH
+data_2_pH <- data_1 %>% filter(Treatment %in% 'Fine without olivine')
+pH <- data_2_pH %>% 
+  ggplot(aes(x=Time, y=pH, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = pH - std_pH, ymax = pH + std_pH), width = 2)+
+  scale_color_manual(values = c("gold2", "navyblue"))+
+  scale_y_continuous(breaks=seq(min(4), max(8.5), by=1), limits = c(4, max(8.5)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="", y= "pH", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+pH
+
+## Si
+data_2_Si <- data_1 %>% filter(Treatment %in% 'Fine without olivine')
+Si <- data_2_Si %>% 
+  ggplot(aes(x=Time, y=Si, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Si - std_Si, ymax = Si + std_Si), width = 2)+
+  scale_color_manual(values = c("gold2","navyblue"))+
+  scale_y_continuous(breaks=seq(min(0), max(40), by=10), limits = c(0, max(40)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Si (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Si
+
+##DIC
+data_DIC <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/DIC.csv")
+
+data_2_DIC <- data_DIC %>% filter(Treatment %in% 'Fine without olivine')
+
+Tot_DIC <-data_2_DIC %>% 
+  ggplot(aes(x=Time, y=DIC, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = DIC-std_dic, ymax = DIC+std_dic, width=2))+
+  scale_color_manual(values = c("gold2", "navyblue"))+
+  scale_y_continuous(breaks=seq(min(10), max(40), by=10), limits = c(10, max(40)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "DIC (mg/kg)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Tot_DIC
+
+## Combined coarse parameters
+(Tot_alk+pH)/(Tot_DIC+Si)
+```
+
+## Autoclaved with olivine
+
+```{r Autoclaved with olivine, message=FALSE, warning=FALSE}
+data_1 <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/temporaldata1.csv")
+
+data_2_c <- data_1 %>% filter(Treatment %in% 'Autoclave with olivine')
+
+Tot_alk <-data_2_c %>% 
+  ggplot(aes(x=Time, y=Tot_alk, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk-std, ymax = Tot_alk+std, width=1.5))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(1000), max(4000), by=1000), limits = c(1000, max(4000)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Tot_alk
+
+
+##pH
+data_2_pH <- data_1 %>% filter(Treatment %in% 'Autoclave with olivine')
+pH <- data_2_pH %>% 
+  ggplot(aes(x=Time, y=pH, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = pH - std_pH, ymax = pH + std_pH), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(5), max(8), by=.5), limits = c(5, max(8)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="", y= "pH", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+pH
+
+## Si
+data_2_Si <- data_1 %>% filter(Treatment %in% 'Autoclave with olivine')
+Si <- data_2_Si %>% 
+  ggplot(aes(x=Time, y=Si, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Si - std_Si, ymax = Si + std_Si), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(0), max(60), by=10), limits = c(0, max(60)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Si (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Si
+
+##DIC
+data_DIC <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/DIC.csv")
+
+data_2_DIC <- data_DIC %>% filter(Treatment %in% 'Autoclave with olivine')
+
+Tot_DIC <-data_2_DIC %>% 
+  ggplot(aes(x=Time, y=DIC, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = DIC-std_dic, ymax = DIC+std_dic, width=2))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  scale_y_continuous(breaks=seq(min(10), max(50), by=10), limits = c(10, max(50)))+
+  scale_x_continuous(breaks=seq(min(data_2_c$Time), max(data_2_c$Time), by=10))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "DIC (mg/kg)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="none",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+Tot_DIC
+
+## Combined coarse parameters
+(Tot_alk+pH)/(Tot_DIC+Si)
+```
+
+
+# Time series: Fine with Olivine vs Fine without olivine (Total Alkalinity)
+```{r}
+data_3 <- data_1 %>% filter(Treatment %in% c('Fine with olivine', 'Fine without olivine'))
+
+Tot_alk_2 <-data_3 %>% 
+  ggplot(aes(x=Time, y=Tot_alk, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk - std, ymax = Tot_alk + std, width=2.0))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Tot_alk_2
+ggsave("Tot_alk_2.png", plot = Tot_alk_2, width = 8,height = 6,units = 'in', dpi = 500)
+
+```
+
+# Time series: Fine with Olivine vs Autoclaved with olivine (Total Alkalinity)
+
+```{r}
+data_4 <- data_1 %>% filter(Treatment %in% c('Fine with olivine', 'Autoclave with olivine'))
+
+Tot_alk_3 <-data_4 %>% 
+  ggplot(aes(x=Time, y=Tot_alk, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk - std, ymax = Tot_alk + std, width=2))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Tot_alk_3
+ggsave("Tot_alk_3.png", plot = Tot_alk_3, width = 8,height = 6,units = 'in', dpi = 500)
+
+```
+
+# Time series: Coarse with Olivine vs Coarse without olivine (Total Alkalinity)
+```{r}
+data_5 <- data_1 %>% filter(Treatment %in% c('Coarse with olivine', 'Coarse without olivine'))
+
+Tot_alk_4 <-data_5 %>% 
+  ggplot(aes(x=Time, y=Tot_alk, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk - std, ymax = Tot_alk + std, width=2))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Tot_alk_4
+ggsave("Tot_alk_4.png", plot = Tot_alk_4, width = 8,height = 6,units = 'in', dpi = 500)
+
+
+data_6 <- data_1 %>% filter(Treatment %in% c('Coarse without olivine', 'Fine without olivine'))
+
+Tot_alk_5 <-data_6 %>% 
+  ggplot(aes(x=Time, y=Tot_alk, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk - std, ymax = Tot_alk + std, width=2))+
+  scale_color_manual(values = c("gold2","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Tot_alk_5
+ggsave("Tot_alk_5.png", plot = Tot_alk_5, width = 8,height = 6,units = 'in', dpi = 500)
+
+```
+
+
+# Time series: Coarse with Olivine vs Fine with olivine (pH)
+```{r}
+data_2_pH <- data_1 %>% filter(Treatment %in% c('Coarse with olivine', 'Fine with olivine'))
+pH <- data_2_pH %>% 
+  ggplot(aes(x=Time, y=pH, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = pH - std_pH, ymax = pH + std_pH), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "pH", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+pH
+ggsave("pH.png", plot = pH, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Coarse with Olivine vs Coarse without olivine (pH)
+```{r}
+data_3_pH <- data_1 %>% filter(Treatment %in% c('Coarse with olivine', 'Coarse without olivine'))
+pH_2 <- data_3_pH %>% 
+  ggplot(aes(x=Time, y=pH, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = pH - std_pH, ymax = pH + std_pH), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "pH", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+pH_2
+ggsave("pH_2.png", plot = pH_2, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Fine with Olivine vs Fine without olivine (pH)
+```{r}
+data_4_pH <- data_1 %>% filter(Treatment %in% c('Fine with olivine', 'Fine without olivine'))
+pH_3 <- data_4_pH %>% 
+  ggplot(aes(x=Time, y=pH, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = pH - std_pH, ymax = pH + std_pH), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "pH", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+pH_3
+ggsave("pH_3.png", plot = pH_3, width = 8,height = 6,units = 'in', dpi = 500)
+```
+# Time series: Autoclaved with Olivine vs Fine with olivine (pH)
+```{r}
+data_5_pH <- data_1 %>% filter(Treatment %in% c('Autoclave with olivine', 'Fine with olivine'))
+pH_4 <- data_5_pH %>% 
+  ggplot(aes(x=Time, y=pH, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = pH - std_pH, ymax = pH + std_pH), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "pH", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+pH_4
+ggsave("pH_4.png", plot = pH_4, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Coarse with Olivine vs Fine with olivine (Si)
+
+```{r}
+data_2_Si <- data_1 %>% filter(Treatment %in% c('Coarse with olivine', 'Fine with olivine'))
+Si <- data_2_Si %>% 
+  ggplot(aes(x=Time, y=Si, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Si - std_Si, ymax = Si + std_Si), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Si (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Si
+ggsave("Si.png", plot = Si, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Coarse with Olivine vs Coarse without olivine (Si)
+
+```{r}
+data_3_Si <- data_1 %>% filter(Treatment %in% c('Coarse with olivine', 'Coarse without olivine'))
+Si_2 <- data_3_Si %>% 
+  ggplot(aes(x=Time, y=Si, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Si - std_Si, ymax = Si + std_Si), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Si (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Si_2
+ggsave("Si_2.png", plot = Si_2, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Fine with Olivine vs Fine without olivine (Si)
+
+```{r}
+data_4_Si <- data_1 %>% filter(Treatment %in% c('Fine with olivine', 'Fine without olivine'))
+Si_3 <- data_4_Si %>% 
+  ggplot(aes(x=Time, y=Si, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Si - std_Si, ymax = Si + std_Si), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Si (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Si_3
+ggsave("Si_3.png", plot = Si_3, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Autoclave with Olivine vs Fine with olivine (Si)
+
+```{r}
+data_5_Si <- data_1 %>% filter(Treatment %in% c('Autoclave with olivine', 'Fine with olivine'))
+Si_4 <- data_5_Si %>% 
+  ggplot(aes(x=Time, y=Si, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Si - std_Si, ymax = Si + std_Si), width = 2)+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Si (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Si_4
+ggsave("Si_4.png", plot = Si_4, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Coarse with Olivine vs Fine with olivine (DIC)
+
+```{r}
+data_DIC <- read.csv("C:/Users/bakaz/OneDrive/Documents/Husna Thesis/DIC.csv")
+
+data_2_DIC <- data_DIC %>% filter(Treatment %in% c('Coarse with olivine', 'Fine with olivine'))
+
+Tot_DIC <-data_2_DIC %>% 
+  ggplot(aes(x=Time, y=DIC, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = DIC-std_dic, ymax = DIC+std_dic, width=2))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "DIC (mg/kg)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Tot_DIC
+ggsave("Tot_DIC.png", plot = Tot_DIC, width = 8,height = 6,units = 'in', dpi = 500)
+
+```
+
+# Time series: Coarse with Olivine vs Coarse without olivine (DIC)
+
+```{r}
+data_3_DIC <- data_DIC %>% filter(Treatment %in% c('Coarse with olivine', 'Coarse without olivine'))
+
+Tot_DIC_2 <-data_3_DIC %>% 
+  ggplot(aes(x=Time, y=DIC, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = DIC-std_dic, ymax = DIC+std_dic, width=2))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "DIC (mg/kg)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Tot_DIC_2
+ggsave("Tot_DIC_2.png", plot = Tot_DIC_2, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Fine with Olivine vs Fine without olivine (DIC)
+
+```{r}
+data_4_DIC <- data_DIC %>% filter(Treatment %in% c('Fine with olivine', 'Fine without olivine'))
+
+Tot_DIC_3 <-data_4_DIC %>% 
+  ggplot(aes(x=Time, y=DIC, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = DIC-std_dic, ymax = DIC+std_dic, width=2))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "DIC (mg/kg)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Tot_DIC_3
+ggsave("Tot_DIC_3.png", plot = Tot_DIC_3, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Autoclave with Olivine vs Fine with olivine (DIC)
+
+```{r}
+data_5_DIC <- data_DIC %>% filter(Treatment %in% c('Autoclave with olivine', 'Fine with olivine'))
+
+Tot_DIC_4 <-data_5_DIC %>% 
+  ggplot(aes(x=Time, y=DIC, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = DIC-std_dic, ymax = DIC+std_dic, width=2))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "DIC (mg/kg)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Tot_DIC_4
+ggsave("Tot_DIC_4.png", plot = Tot_DIC_4, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Coarse with Olivine vs Fine with olivine (Mg)
+
+```{r message=FALSE, warning=FALSE}
+data_1_Mg <-data_1 %>% filter(Sampling.points %in% "Water")
+data_1_Mg <-data_1_Mg %>% filter(Treatment %in% "Coarse with olivine")
+
+Mg <-data_1_Mg %>% 
+  ggplot(aes(x=Time, y=Mg, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Mg-std_Mg, ymax = Mg+std_Mg, width=1.5))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Mg (mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Mg
+ggsave("Mg.png", plot = Mg, width = 8,height = 6,units = 'in', dpi = 500)
+
+```
+
+```{r Mg evolution in water, message=FALSE, warning=FALSE}
+m <-data_1 %>% 
+  select(c(Treatment,Sampling.points,Time, Mg)) %>% 
+  filter(Sampling.points %in% "Water");na.omit(m)
+
+M <-ggplot(m, aes(x=Time, y=Mg)) +
+  geom_line( color="red", size=0.8) + 
+  geom_point(color ="navyblue") +
+  facet_grid(~Treatment)+
+  xlab("") +
+  theme_minimal()+
+  labs(x="Time (day)", y= "Mg (mg/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 8),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+M
+```
+
+
+```{r}
+ff <-data_1 %>% filter(Sampling.points %in% 'Water')
+fff <-ff %>% filter(Treatment %in% c('Fine with olivine','Fine without olivine'))
+
+ff1<-fff %>% 
+  ggplot(aes(x=Time, y=Tot_alk, color=Treatment)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk-std, ymax = Tot_alk+std, width=1.5))+
+  scale_y_continuous(breaks=seq(min(1000), max(6000), by=1000), limits = c(1000, max(6000)))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+ff1
+
+ccc <-ff %>% filter(Treatment %in% c('Coarse with olivine','Coarse without olivine'))
+
+cc1<-ccc %>% 
+  ggplot(aes(x=Time, y=Tot_alk, color=Treatment)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Tot_alk-std, ymax = Tot_alk+std, width=1.5))+
+  scale_y_continuous(breaks=seq(min(1000), max(4000), by=1000), limits = c(1000, max(4000)))+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Total Alkalinity (\u00B5mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal",
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"))
+cc1
+```
+
+
+# Time series: Coarse with Olivine vs Coarse without olivine (Mg)
+
+```{r}
+data_2_Mg <-data_1 %>% filter(Treatment %in% c('Coarse with olivine', 'Coarse without olivine'))
+Mg_2 <-data_2_Mg %>% 
+  ggplot(aes(x=Time, y=Mg, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Mg-std_Mg, ymax = Mg+std_Mg, width=1.5))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Mg (mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Mg_2
+ggsave("Mg_2.png", plot = Mg_2, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Fine with Olivine vs FIne without olivine (Mg)
+
+```{r}
+data_3_Mg <-data_1 %>% filter(Treatment %in% c('Fine with olivine', 'Fine without olivine'))
+Mg_3 <-data_3_Mg %>% 
+  ggplot(aes(x=Time, y=Mg, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Mg-std_Mg, ymax = Mg+std_Mg, width=1.5))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Mg (mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Mg_3
+ggsave("Mg_3.png", plot = Mg_3, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Autoclave with Olivine vs FIne with olivine (Mg)
+
+```{r}
+data_4_Mg <-data_1 %>% filter(Treatment %in% c('Autoclave with olivine', 'Fine with olivine'))
+Mg_4 <-data_4_Mg %>% 
+  ggplot(aes(x=Time, y=Mg, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Mg-std_Mg, ymax = Mg+std_Mg, width=1.5))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Mg (mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Mg_4
+ggsave("Mg_4.png", plot = Mg_4, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+# Time series: Coarse with olivine vs FIne with olivine (Ni)
+
+```{r}
+data_1_Ni <-data_1 %>% filter(Treatment %in% c('Coarse with olivine', 'Fine with olivine'))
+Ni <-data_1_Ni %>% 
+  ggplot(aes(x=Time, y=Ni, group= Sampling.points, color=Sampling.points)) +
+  geom_point(size = 2.5) +
+  geom_errorbar(aes(ymin = Ni-std_Ni, ymax = Ni+std_Ni, width=1.5))+
+  scale_color_manual(values = c("forestgreen","gold2", "coral4","navyblue"))+
+  facet_grid(~Treatment)+
+  theme_minimal()+
+  labs(x="Time (day)", y= "Ni (mol/L)", color="")+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 15),
+        axis.title = element_text(face = "bold", colour = "black", size = 15),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 15),
+        legend.position="top",
+        legend.justification = c("right"),
+        legend.direction="horizontal")
+Ni
+ggsave("Ni.png", plot = Ni, width = 8,height = 6,units = 'in', dpi = 500)
+```
+
+
+## Combined plots
+
+```{r}
+Tot_alk
+Tot_alk_2
+Tot_alk_3
+Tot_alk_4
+pH
+pH_2
+pH_3
+pH_4
+Si
+Si_2
+Si_3
+Si_4
+Tot_DIC
+Tot_DIC_2
+Tot_DIC_3
+Tot_DIC_4
+Mg
+Mg_2
+Mg_3
+Mg_4
+(Tot_alk+pH)/(Tot_DIC+Mg)
+```
+
+
+
+
+# Delta TA plot
+```{r}
+TA_volume <- read.csv("TA_volume.csv")
+TA_vol<-TA_volume %>% ggplot(aes(x=Treatment, y=TA, fill = Treatment))+
+  geom_boxplot()+
+  geom_hline(yintercept = 1200, linetype = "dashed", color = "red", size = 1)+
+  stat_summary(fun = mean, geom = "point",shape=20,size=3, color= 'black', 
+               position = position_dodge(width = 0.75))+
+  theme_classic()+
+  theme(axis.text = element_text(face = "bold", colour = "black",size = 9),
+        axis.title = element_text(face = "bold", colour = "black", size = 17),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        legend.title = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold", size = 12),
+        axis.ticks = element_line(linewidth = 1),
+        axis.ticks.length.y = unit(.20, "cm"),
+        axis.ticks.length.x = unit(.20, "cm"),
+        legend.position = "none")+
+  scale_y_continuous(breaks=seq(1000, max(TA_volume$TA), by=2000))+
+  labs(x="Treatment",  y=expression(paste(Delta, "Total alkalinity (\u00B5mol)")))
+TA_vol
+ggsave("TA_vol.png", plot = TA_vol, width = 8, height = 6, units = "in", dpi = 300)
+```
+
+
+## TA-Si: Coarse with olivine and Fine with olivine
+
+```{r}
+TA_Si_acc <-data_1
+TA_Si_acc <-TA_Si_acc %>% filter(Treatment %in% c('Coarse with olivine'))
+TA_Si_acc <-TA_Si_acc %>% filter(Sampling.points %in% c('Water',"Olivine","Sediment"))
+TA_Si_acc_lm <- lm(Tot_alk~Si, data = TA_Si_acc);summary(TA_Si_acc_lm)
+r_squared_TA_Si_acc_lm <- summary(TA_Si_acc_lm)$r.squared
+
+plt_TA_Si_acc <- ggplot(TA_Si_acc, aes(x = Si, y = Tot_alk, color= Sampling.points)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", linetype = "dashed", color = "black", se = T) +
+  geom_label(aes(x=Inf, y=Inf, 
+                 label=sprintf( "R² = %.2f",  r_squared_TA_Si_acc_lm)), 
+             hjust=1, vjust=1.7, size=5, color="black", fontface="bold")+
+  labs(x = "Si accumulation (µmol/L)", 
+       y = "TA accumulation (\u00B5mol/L)", 
+       color=" Sampling points") +
+  theme_classic() +
+  theme(text = element_text(size = 13),
+        axis.text = element_text(face = "bold", colour = "black", size = 15),
+        axis.title = element_text(face = "bold", colour = "black",size = 17),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        legend.title = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold"))
+plt_TA_Si_acc
+ggsave("plt_TA_Si_acc.png", plot = plt_TA_Si_acc, width = 16, height = 12, dpi = 300)
+
+```
+
+## TA-Si: Coarse without olivine and Fine without olivine
+
+```{r}
+A_Si_acc <-data_1
+A_Si_acc <-A_Si_acc %>% filter(Treatment %in% c('Fine with olivine'))
+A_Si_acc <-A_Si_acc %>% filter(Sampling.points %in% c('Water',"Olivine","Sediment"))
+A_Si_acc_lm <- lm(Tot_alk~Si, data = A_Si_acc);summary(A_Si_acc_lm)
+r_squared_A_Si_acc_lm <- summary(A_Si_acc_lm)$r.squared
+
+plt_A_Si_acc <- ggplot(A_Si_acc, aes(x = Si, y = Tot_alk, color= Sampling.points)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", linetype = "dashed", color = "black", se = T) +
+  geom_label(aes(x=Inf, y=Inf, 
+                 label=sprintf( "R² = %.2f",  r_squared_A_Si_acc_lm)), 
+             hjust=1, vjust=1.7, size=5, color="black", fontface="bold")+
+  labs(x = "Si accumulation (µmol/L)", 
+       y = "TA accumulation (\u00B5mol/L)", 
+       color=" Sampling points") +
+  theme_classic() +
+  theme(text = element_text(size = 13),
+        axis.text = element_text(face = "bold", colour = "black", size = 15),
+        axis.title = element_text(face = "bold", colour = "black",size = 17),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        legend.title = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold"))
+plt_A_Si_acc
+ggsave("plt_A_Si_acc.png", plot = plt_A_Si_acc, width = 16, height = 12, dpi = 300)
+
+
+
+```
+
+## TA-Si: Coarse without olivine and Fine without olivine
+
+```{r}
+A_Si_acc <-data_1
+A_Si_acc <-A_Si_acc %>% filter(Treatment %in% c('Fine without olivine'))
+A_Si_acc <-A_Si_acc %>% filter(Sampling.points %in% c('Water',"Olivine","Sediment"))
+A_Si_acc_lm <- lm(Tot_alk~Si, data = A_Si_acc);summary(A_Si_acc_lm)
+r_squared_A_Si_acc_lm <- summary(A_Si_acc_lm)$r.squared
+
+plt_A_Si_acc <- ggplot(A_Si_acc, aes(x = Si, y = Tot_alk, color= Sampling.points)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", linetype = "dashed", color = "black", se = T) +
+  geom_label(aes(x=Inf, y=Inf, 
+                 label=sprintf( "R² = %.2f",  r_squared_A_Si_acc_lm)), 
+             hjust=1, vjust=1.7, size=5, color="black", fontface="bold")+
+  labs(x = "Si accumulation (µmol/L)", 
+       y = "TA accumulation (\u00B5mol/L)", 
+       color=" Sampling points") +
+  theme_classic() +
+  theme(text = element_text(size = 13),
+        axis.text = element_text(face = "bold", colour = "black", size = 15),
+        axis.title = element_text(face = "bold", colour = "black",size = 17),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        legend.title = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold"))
+plt_A_Si_acc
+ggsave("plt_A_Si_acc.png", plot = plt_A_Si_acc, width = 16, height = 12, dpi = 300)
+```
+
+```{r}
+A_Si_acc <-data_1
+A_Si_acc <-A_Si_acc %>% filter(Treatment %in% c('Coarse without olivine'))
+A_Si_acc <-A_Si_acc %>% filter(Sampling.points %in% c('Water',"Olivine","Sediment"))
+A_Si_acc_lm <- lm(Tot_alk~Si, data = A_Si_acc);summary(A_Si_acc_lm)
+r_squared_A_Si_acc_lm <- summary(A_Si_acc_lm)$r.squared
+
+plt_A_Si_acc <- ggplot(A_Si_acc, aes(x = Si, y = Tot_alk, color= Sampling.points)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", linetype = "dashed", color = "black", se = T) +
+  geom_label(aes(x=Inf, y=Inf, 
+                 label=sprintf( "R² = %.2f",  r_squared_A_Si_acc_lm)), 
+             hjust=1, vjust=1.7, size=5, color="black", fontface="bold")+
+  labs(x = "Si accumulation (µmol/L)", 
+       y = "TA accumulation (\u00B5mol/L)", 
+       color=" Sampling points") +
+  theme_classic() +
+  theme(text = element_text(size = 13),
+        axis.text = element_text(face = "bold", colour = "black", size = 15),
+        axis.title = element_text(face = "bold", colour = "black",size = 17),
+        legend.text = element_text(color = "black", face = "bold", size = 13),
+        legend.title = element_text(color = "black", face = "bold", size = 13),
+        plot.background = element_rect(fill = "transparent"), 
+        panel.background = element_rect(fill = "transparent"),
+        strip.text = element_text(face = "bold"))
+plt_A_Si_acc
+ggsave("plt_A_Si_acc.png", plot = plt_A_Si_acc, width = 16, height = 12, dpi = 300)
+```
+
